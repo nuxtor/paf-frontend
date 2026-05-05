@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(copy:*)",
+      "Bash(ls -la \"E:\\\\Projects\\\\Nuxt\\\\paf-frontend\\\\app\"\" | grep -E \"^d)",
+      "Bash(.vue$)",
+      "Bash(.ts$ \")",
+      "Bash(ls:*)",
+      "Bash(npm run generate:*)",
+      "Bash(npx serve -p 3000)",
+      "Bash(npx serve:*)",
+      "Bash(npx nuxt typecheck:*)",
+      "Bash(npx nuxt:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

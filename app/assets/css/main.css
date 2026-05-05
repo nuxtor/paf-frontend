@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Ovo', serif;
+  }
+
+  /* Light mode (default) */
+  body {
+    @apply text-pif-black bg-white antialiased;
+  }
+
+  /* Dark mode */
+  html.dark body {
+    @apply text-gray-100 bg-pif-black;
+  }
+
+  /* Dark mode text colors */
+  html.dark h1,
+  html.dark h2,
+  html.dark h3,
+  html.dark h4,
+  html.dark h5,
+  html.dark h6 {
+    @apply text-white;
+  }
+}
+
+@layer components {
+  .container-narrow {
+    @apply max-w-5xl mx-auto px-4;
+  }
+
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center font-medium rounded-lg transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-pif-green focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .link-hover {
+    @apply transition-colors duration-200 hover:text-pif-green-dark;
+  }
+
+  html.dark .link-hover {
+    @apply hover:text-pif-gold;
+  }
+
+  /* Card component for dark mode */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+  }
+
+  html.dark .card {
+    @apply bg-dark-200 border-dark-600;
+  }
+
+  /* Form inputs for dark mode */
+  .form-input {
+    @apply w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-pif-black placeholder-gray-400;
+    @apply focus:outline-none focus:ring-2 focus:ring-pif-green focus:border-transparent;
+  }
+
+  html.dark .form-input {
+    @apply bg-dark-200 border-dark-600 text-white placeholder-dark-900;
+    @apply focus:ring-pif-gold;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    @apply p-2 rounded-lg transition-colors duration-200;
+    @apply text-gray-600 hover:text-pif-green-dark hover:bg-gray-100;
+  }
+
+  html.dark .theme-toggle {
+    @apply text-gray-400 hover:text-pif-gold hover:bg-dark-300;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Dark mode specific utilities */
+  .dark-card {
+    @apply bg-white dark:bg-dark-200 border border-gray-200 dark:border-dark-600;
+  }
+
+  .dark-text {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+
+  .dark-text-primary {
+    @apply text-pif-black dark:text-white;
+  }
+
+  .dark-text-secondary {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+
+  .dark-bg {
+    @apply bg-white dark:bg-pif-black;
+  }
+
+  .dark-bg-secondary {
+    @apply bg-gray-50 dark:bg-dark-100;
+  }
+
+  .dark-bg-tertiary {
+    @apply bg-gray-100 dark:bg-dark-300;
+  }
+
+  .dark-border {
+    @apply border-gray-200 dark:border-dark-600;
+  }
+}
