@@ -30,7 +30,7 @@ const shadowClasses = {
 <template>
   <div
     :class="[
-      'bg-white rounded-xl',
+      'bg-white dark:bg-dark-200 rounded-xl',
       paddingClasses[padding],
       shadowClasses[shadow],
       hover && 'transition-shadow duration-300 hover:shadow-md',

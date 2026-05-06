@@ -10,6 +10,7 @@ const cartStore = useCartStore()
 const uiStore = useUiStore()
 const { apiFetch } = useApi()
 const { getAssetUrl } = useAsset()
+const { isDark } = useTheme()
 const { $stripe } = useNuxtApp() as { $stripe: Stripe | null }
 
 useSeoMeta({
@@ -100,9 +101,9 @@ const initStripeElements = (clientSecret: string) => {
   stripeElements.value = $stripe.elements({
     clientSecret,
     appearance: {
-      theme: 'stripe',
+      theme: isDark.value ? 'night' : 'stripe',
       variables: {
-        colorPrimary: '#1B4332',
+        colorPrimary: isDark.value ? '#D4A437' : '#1B4332',
         fontFamily: 'Inter, sans-serif',
         borderRadius: '8px',
       },
@@ -238,14 +239,14 @@ onMounted(async () => {
 
 <template>
   <div class="container py-8">
-    <h1 class="font-heading text-3xl text-pif-black mb-8 text-center">Checkout</h1>
+    <h1 class="font-heading text-3xl text-pif-black dark:text-white mb-8 text-center">Checkout</h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Checkout Form -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Contact Information -->
         <PCard>
-          <h2 class="font-heading text-xl text-pif-black mb-4">Contact Information</h2>
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Contact Information</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PInput
               v-model="form.email"
@@ -267,7 +268,7 @@ onMounted(async () => {
 
         <!-- Shipping Address -->
         <PCard>
-          <h2 class="font-heading text-xl text-pif-black mb-4">Shipping Address</h2>
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Shipping Address</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <PInput
               v-model="form.shipping.first_name"
@@ -325,15 +326,15 @@ onMounted(async () => {
         <!-- Billing Address -->
         <PCard>
           <div class="flex items-center justify-between mb-4">
-            <h2 class="font-heading text-xl text-pif-black">Billing Address</h2>
+            <h2 class="font-heading text-xl text-pif-black dark:text-white">Billing Address</h2>
           </div>
           <label class="flex items-center gap-3 cursor-pointer mb-4">
             <input
               v-model="form.billing_same_as_shipping"
               type="checkbox"
-              class="w-4 h-4 rounded border-gray-300 text-pif-green-dark focus:ring-pif-green"
+              class="w-4 h-4 rounded border-gray-300 dark:border-dark-600 text-pif-green-dark dark:text-pif-gold focus:ring-pif-green dark:focus:ring-pif-gold"
             />
-            <span class="text-sm text-gray-700">Same as shipping address</span>
+            <span class="text-sm text-gray-700 dark:text-gray-300">Same as shipping address</span>
           </label>
 
           <div v-if="!form.billing_same_as_shipping" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -386,15 +387,15 @@ onMounted(async () => {
 
         <!-- Shipping Method -->
         <PCard>
-          <h2 class="font-heading text-xl text-pif-black mb-4">Shipping Method</h2>
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Shipping Method</h2>
 
-          <div v-if="cartStore.isFetchingRates" class="flex items-center gap-3 p-4 text-gray-500">
-            <div class="animate-spin w-5 h-5 border-2 border-pif-green-dark border-t-transparent rounded-full" />
+          <div v-if="cartStore.isFetchingRates" class="flex items-center gap-3 p-4 text-gray-500 dark:text-gray-400">
+            <div class="animate-spin w-5 h-5 border-2 border-pif-green-dark dark:border-pif-gold border-t-transparent rounded-full" />
             <span class="text-sm">Fetching shipping rates...</span>
           </div>
 
-          <div v-else-if="cartStore.shippingRates.length === 0" class="p-4 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-500">
+          <div v-else-if="cartStore.shippingRates.length === 0" class="p-4 bg-gray-50 dark:bg-dark-300 rounded-lg">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
               Enter your postcode above to see available shipping options.
             </p>
           </div>
@@ -406,8 +407,8 @@ onMounted(async () => {
               :class="[
                 'flex items-center gap-4 p-4 border rounded-lg cursor-pointer transition-colors',
                 cartStore.selectedShippingRate?.id === rate.id
-                  ? 'border-pif-green-dark bg-pif-green-dark/5'
-                  : 'hover:border-pif-green',
+                  ? 'border-pif-green-dark dark:border-pif-gold bg-pif-green-dark/5 dark:bg-pif-gold/10'
+                  : 'border-gray-200 dark:border-dark-600 hover:border-pif-green dark:hover:border-pif-gold',
               ]"
             >
               <input
@@ -415,41 +416,41 @@ onMounted(async () => {
                 name="shipping"
                 :value="rate.id"
                 :checked="cartStore.selectedShippingRate?.id === rate.id"
-                class="text-pif-green-dark focus:ring-pif-green"
+                class="text-pif-green-dark dark:text-pif-gold focus:ring-pif-green dark:focus:ring-pif-gold"
                 @change="cartStore.selectShippingRate(rate)"
               />
               <div class="flex-1">
-                <p class="font-medium">{{ rate.name }}</p>
-                <p class="text-sm text-gray-500">{{ rate.delivery_estimate }}</p>
-                <p v-if="rate.description" class="text-xs text-gray-400 mt-0.5">{{ rate.description }}</p>
+                <p class="font-medium text-pif-black dark:text-white">{{ rate.name }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ rate.delivery_estimate }}</p>
+                <p v-if="rate.description" class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ rate.description }}</p>
               </div>
-              <span class="font-medium">
+              <span class="font-medium text-pif-black dark:text-white">
                 {{ rate.free_shipping ? 'Free' : formatCurrency(rate.rate) }}
               </span>
             </label>
           </div>
-          <p v-if="getError('shipping_method')" class="text-sm text-red-500 mt-2">
+          <p v-if="getError('shipping_method')" class="text-sm text-red-500 dark:text-red-400 mt-2">
             {{ getError('shipping_method') }}
           </p>
         </PCard>
 
         <!-- Payment -->
         <PCard>
-          <h2 class="font-heading text-xl text-pif-black mb-4">Payment</h2>
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Payment</h2>
 
-          <div v-if="!$stripe" class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <p class="text-sm text-yellow-700">
+          <div v-if="!$stripe" class="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p class="text-sm text-yellow-700 dark:text-yellow-300">
               Payment system is loading. Please wait...
             </p>
           </div>
 
           <div id="payment-element" class="min-h-[100px]" />
 
-          <p v-if="stripeError" class="text-sm text-red-500 mt-3">
+          <p v-if="stripeError" class="text-sm text-red-500 dark:text-red-400 mt-3">
             {{ stripeError }}
           </p>
 
-          <div class="flex items-center gap-2 mt-4 text-xs text-gray-400">
+          <div class="flex items-center gap-2 mt-4 text-xs text-gray-400 dark:text-gray-500">
             <Icon name="heroicons:lock-closed" class="w-3.5 h-3.5" />
             <span>Your payment information is encrypted and secure</span>
           </div>
@@ -457,20 +458,20 @@ onMounted(async () => {
 
         <!-- Order Notes -->
         <PCard>
-          <h2 class="font-heading text-xl text-pif-black mb-4">Order Notes (Optional)</h2>
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Order Notes (Optional)</h2>
           <textarea
             v-model="form.notes"
             rows="3"
             placeholder="Any special instructions for your order..."
-            class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pif-green focus:border-pif-green"
+            class="w-full rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pif-green dark:focus:ring-pif-gold focus:border-pif-green dark:focus:border-pif-gold"
           />
         </PCard>
       </div>
 
       <!-- Order Summary -->
       <div class="lg:col-span-1">
-        <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-          <h2 class="font-heading text-xl text-pif-black mb-4">Order Summary</h2>
+        <div class="bg-white dark:bg-dark-200 rounded-xl shadow-sm dark:shadow-black/50 p-6 sticky top-24">
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Order Summary</h2>
 
           <!-- Cart Items Preview -->
           <div class="space-y-3 mb-4">
@@ -488,49 +489,49 @@ onMounted(async () => {
                 />
                 <div
                   v-else
-                  class="w-12 h-12 bg-gray-100 rounded flex items-center justify-center"
+                  class="w-12 h-12 bg-gray-100 dark:bg-dark-300 rounded flex items-center justify-center"
                 >
-                  <Icon name="heroicons:photo" class="w-4 h-4 text-gray-300" />
+                  <Icon name="heroicons:photo" class="w-4 h-4 text-gray-300 dark:text-gray-600" />
                 </div>
-                <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center">
+                <span class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gray-500 dark:bg-dark-600 text-white text-xs rounded-full flex items-center justify-center">
                   {{ item.quantity }}
                 </span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="font-medium line-clamp-1">{{ item.name }}</p>
-                <p v-if="item.variant_name" class="text-gray-500 text-xs">{{ item.variant_name }}</p>
+                <p class="font-medium text-pif-black dark:text-white line-clamp-1">{{ item.name }}</p>
+                <p v-if="item.variant_name" class="text-gray-500 dark:text-gray-400 text-xs">{{ item.variant_name }}</p>
               </div>
-              <span class="font-medium">{{ formatCurrency(item.total) }}</span>
+              <span class="font-medium text-pif-black dark:text-white">{{ formatCurrency(item.total) }}</span>
             </div>
           </div>
 
-          <div class="border-t pt-4 space-y-3 text-sm">
+          <div class="border-t border-gray-200 dark:border-dark-600 pt-4 space-y-3 text-sm">
             <div class="flex justify-between">
-              <span class="text-gray-600">Subtotal</span>
-              <span class="font-medium">{{ formatCurrency(cartStore.subtotal) }}</span>
+              <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
+              <span class="font-medium text-pif-black dark:text-white">{{ formatCurrency(cartStore.subtotal) }}</span>
             </div>
             <div class="flex justify-between">
-              <span class="text-gray-600">Shipping</span>
-              <span class="font-medium">
+              <span class="text-gray-600 dark:text-gray-400">Shipping</span>
+              <span class="font-medium text-pif-black dark:text-white">
                 {{ cartStore.selectedShippingRate
                   ? (cartStore.selectedShippingRate.free_shipping ? 'Free' : formatCurrency(cartStore.shippingTotal))
                   : 'Not selected' }}
               </span>
             </div>
-            <div v-if="cartStore.discountTotal > 0" class="flex justify-between text-green-600">
+            <div v-if="cartStore.discountTotal > 0" class="flex justify-between text-green-600 dark:text-green-400">
               <span>Discount</span>
               <span>-{{ formatCurrency(cartStore.discountTotal) }}</span>
             </div>
-            <div v-if="cartStore.couponCode" class="flex items-center gap-1 text-xs text-green-600">
+            <div v-if="cartStore.couponCode" class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
               <Icon name="heroicons:tag" class="w-3 h-3" />
               <span>{{ cartStore.couponCode }}</span>
             </div>
           </div>
 
-          <div class="border-t my-4 pt-4">
+          <div class="border-t border-gray-200 dark:border-dark-600 my-4 pt-4">
             <div class="flex justify-between text-lg font-semibold">
-              <span>Total</span>
-              <span class="text-pif-green-dark">{{ formatCurrency(cartStore.total) }}</span>
+              <span class="text-pif-black dark:text-white">Total</span>
+              <span class="text-pif-green-dark dark:text-pif-gold">{{ formatCurrency(cartStore.total) }}</span>
             </div>
           </div>
 
@@ -545,11 +546,11 @@ onMounted(async () => {
             Place Order
           </PButton>
 
-          <p class="text-xs text-gray-500 text-center mt-4">
+          <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
             By placing your order, you agree to our
-            <NuxtLink to="/terms" class="underline hover:text-pif-green-dark">Terms and Conditions</NuxtLink>
+            <NuxtLink to="/terms" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Terms and Conditions</NuxtLink>
             and
-            <NuxtLink to="/policies/privacy" class="underline hover:text-pif-green-dark">Privacy Policy</NuxtLink>.
+            <NuxtLink to="/policies/privacy" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Privacy Policy</NuxtLink>.
           </p>
         </div>
       </div>
