@@ -31,7 +31,16 @@ export const useCartStore = defineStore('cart', () => {
 
   // Sync state from API response
   const syncFromApi = (cart: ApiCart) => {
-    items.value = cart.items
+    const config = useRuntimeConfig()
+    const imageBase = ((config.public.imageBaseUrl as string) || '').replace(/\/$/, '')
+    items.value = cart.items.map((item) => ({
+      ...item,
+      image: item.image
+        ? /^https?:\/\//i.test(item.image)
+          ? item.image
+          : `${imageBase}/${item.image.replace(/^\//, '')}`
+        : item.image,
+    }))
     couponCode.value = cart.promotion_code
   }
 

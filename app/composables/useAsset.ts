@@ -12,6 +12,9 @@ export const useAsset = () => {
    * @returns The full URL with base path prefix
    */
   const getAssetUrl = (path: string): string => {
+    if (!path) return ''
+    // Pass absolute URLs through unchanged
+    if (/^https?:\/\//i.test(path)) return path
     // Remove leading slash if present
     const cleanPath = path.startsWith('/') ? path.slice(1) : path
     // Ensure baseURL ends with / and combine

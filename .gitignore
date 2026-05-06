@@ -5,6 +5,7 @@
 .nitro
 .cache
 dist
+static_output
 
 # Node dependencies
 node_modules

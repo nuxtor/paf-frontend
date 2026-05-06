@@ -1,99 +1,12 @@
 <script setup lang="ts">
-import type { Product } from '~/types/product'
-
+const productsStore = useProductsStore()
 const { getAssetUrl } = useAsset()
 
-// Demo products for display
-const demoProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Marinated Halal Lamb Leg Steak (Boneless) Regular',
-    slug: 'marinated-halal-lamb-leg-steak-boneless-regular',
-    sku: 'LAMB-001',
-    short_description: 'Premium quality halal lamb leg steak, boneless and marinated',
-    description: '',
-    price: 16.99,
-    featured_image: 'images/products/meat-products-07.jpg',
-    images: [],
-    category: { id: 1, name: 'Halal Lamb', slug: 'halal-lamb' },
-    category_id: 1,
-    stock_quantity: 50,
-    stock_status: 'in_stock',
-    is_active: true,
-    is_featured: true,
-    is_new: true,
-    halal_certified: true,
-    has_variants: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    name: 'Marinated Halal Lamb Leg Steak (Boneless) Regular',
-    slug: 'marinated-halal-lamb-leg-steak-2',
-    sku: 'LAMB-002',
-    short_description: 'Premium quality halal lamb leg steak, boneless and marinated',
-    description: '',
-    price: 16.99,
-    featured_image: 'images/products/meat-products-08.jpg',
-    images: [],
-    category: { id: 1, name: 'Halal Lamb', slug: 'halal-lamb' },
-    category_id: 1,
-    stock_quantity: 50,
-    stock_status: 'in_stock',
-    is_active: true,
-    is_featured: true,
-    is_new: false,
-    halal_certified: true,
-    has_variants: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    name: 'Marinated Halal Lamb Leg Steak (Boneless) Regular',
-    slug: 'marinated-halal-lamb-leg-steak-3',
-    sku: 'LAMB-003',
-    short_description: 'Premium quality halal lamb leg steak, boneless and marinated',
-    description: '',
-    price: 16.99,
-    featured_image: 'images/products/meat-products-09.jpg',
-    images: [],
-    category: { id: 1, name: 'Halal Lamb', slug: 'halal-lamb' },
-    category_id: 1,
-    stock_quantity: 50,
-    stock_status: 'in_stock',
-    is_active: true,
-    is_featured: true,
-    is_new: false,
-    halal_certified: true,
-    has_variants: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    name: 'Marinated Halal Lamb Leg Steak (Boneless) Regular',
-    slug: 'marinated-halal-lamb-leg-steak-4',
-    sku: 'LAMB-004',
-    short_description: 'Premium quality halal lamb leg steak, boneless and marinated',
-    description: '',
-    price: 16.99,
-    featured_image: 'images/products/meat-products-10.jpg',
-    images: [],
-    category: { id: 1, name: 'Halal Lamb', slug: 'halal-lamb' },
-    category_id: 1,
-    stock_quantity: 50,
-    stock_status: 'in_stock',
-    is_active: true,
-    is_featured: true,
-    is_new: false,
-    halal_certified: true,
-    has_variants: false,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  },
-]
+onMounted(() => {
+  if (productsStore.latestProducts.length === 0) {
+    productsStore.fetchLatestProducts()
+  }
+})
 </script>
 
 <template>
@@ -112,23 +25,50 @@ const demoProducts: Product[] = [
         </NuxtLink>
       </div>
 
+      <!-- Loading -->
+      <div
+        v-if="productsStore.isLoading && productsStore.latestProducts.length === 0"
+        class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+      >
+        <div
+          v-for="i in 4"
+          :key="i"
+          class="aspect-square bg-gray-100 dark:bg-dark-200 rounded-xl animate-pulse"
+        />
+      </div>
+
+      <!-- Empty -->
+      <div
+        v-else-if="productsStore.latestProducts.length === 0"
+        class="text-center py-12 text-gray-500 dark:text-gray-400"
+      >
+        No products available right now.
+      </div>
+
       <!-- Products Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         <article
-          v-for="product in demoProducts"
+          v-for="product in productsStore.latestProducts"
           :key="product.id"
           class="group bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-shadow border border-transparent dark:border-dark-600"
         >
           <!-- Image -->
           <NuxtLink
             :to="`/products/${product.slug}`"
-            class="block aspect-square overflow-hidden rounded-t-xl"
+            class="block aspect-square overflow-hidden rounded-t-xl bg-gray-100 dark:bg-dark-300"
           >
             <img
+              v-if="product.featured_image"
               :src="getAssetUrl(product.featured_image)"
               :alt="product.name"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
+            <div
+              v-else
+              class="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-600"
+            >
+              <Icon name="heroicons:photo" class="w-12 h-12" />
+            </div>
           </NuxtLink>
 
           <!-- Content -->

@@ -1,5 +1,37 @@
 import { defineStore } from 'pinia'
 import type { Product, Category, ProductFilters } from '~/types/product'
+import { adaptProduct, adaptProducts, adaptCategory } from '~/utils/product-adapter'
+
+interface PaginatedProductsResponse {
+  data: any[]
+  meta?: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
+}
+
+interface SingleProductResponse {
+  product?: any
+  data?: any
+  pricing?: unknown
+}
+
+interface CategoriesResponse {
+  categories: any[]
+}
+
+const flattenCategories = (categories: Category[]): Category[] => {
+  const flat: Category[] = []
+  for (const c of categories) {
+    flat.push(c)
+    if (c.children?.length) {
+      flat.push(...flattenCategories(c.children))
+    }
+  }
+  return flat
+}
 
 export const useProductsStore = defineStore('products', () => {
   // State
@@ -7,6 +39,7 @@ export const useProductsStore = defineStore('products', () => {
   const featuredProducts = ref<Product[]>([])
   const latestProducts = ref<Product[]>([])
   const categories = ref<Category[]>([])
+  const flatCategories = ref<Category[]>([])
   const currentProduct = ref<Product | null>(null)
   const isLoading = ref(false)
   const pagination = ref({
@@ -22,109 +55,111 @@ export const useProductsStore = defineStore('products', () => {
   )
 
   const getCategoryBySlug = computed(() => (slug: string) =>
-    categories.value.find((c) => c.slug === slug)
+    flatCategories.value.find((c) => c.slug === slug)
   )
 
   // Actions
   const fetchProducts = async (filters?: ProductFilters) => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      // const response = await apiFetch<PaginatedResponse<Product>>('/products', {
-      //   query: filters,
-      // })
-      // products.value = response.data
-      // pagination.value = response.meta
+      const response = await apiFetch<PaginatedProductsResponse>('/shop/products', {
+        query: filters as Record<string, any>,
+      })
+      products.value = adaptProducts(response.data)
+      if (response.meta) {
+        pagination.value = {
+          currentPage: response.meta.current_page,
+          lastPage: response.meta.last_page,
+          perPage: response.meta.per_page,
+          total: response.meta.total,
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch products', error)
+      products.value = []
     } finally {
       isLoading.value = false
     }
   }
 
   const fetchFeaturedProducts = async () => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      // For now, use dummy data
+      const response = await apiFetch<{ data: any[] }>('/shop/products/featured')
+      featuredProducts.value = adaptProducts(response.data)
+    } catch (error) {
+      console.error('Failed to fetch featured products', error)
+      featuredProducts.value = []
     } finally {
       isLoading.value = false
     }
   }
 
   const fetchLatestProducts = async () => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
+      const response = await apiFetch<PaginatedProductsResponse>('/shop/products', {
+        query: { sort: 'newest', per_page: 8 },
+      })
+      latestProducts.value = adaptProducts(response.data)
+    } catch (error) {
+      console.error('Failed to fetch latest products', error)
+      latestProducts.value = []
     } finally {
       isLoading.value = false
     }
   }
 
   const fetchProduct = async (slug: string) => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      // currentProduct.value = await apiFetch<Product>(`/products/${slug}`)
+      const response = await apiFetch<SingleProductResponse>(`/shop/products/${slug}`)
+      const raw = response.product ?? response.data
+      currentProduct.value = raw ? adaptProduct(raw) : null
+      return currentProduct.value
+    } catch (error) {
+      console.error(`Failed to fetch product ${slug}`, error)
+      currentProduct.value = null
+      return null
     } finally {
       isLoading.value = false
     }
   }
 
   const fetchCategories = async () => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      // For now, use static categories
-      categories.value = [
-        {
-          id: 1,
-          name: 'Meat',
-          slug: 'meat',
-          description: 'Premium halal meat cuts',
-          image: 'images/products/meat-products-01.jpg',
-        },
-        {
-          id: 2,
-          name: 'Poultry',
-          slug: 'poultry',
-          description: 'Fresh halal poultry',
-          image: 'images/products/meat-products-02.jpg',
-        },
-        {
-          id: 3,
-          name: 'Seafood',
-          slug: 'seafood',
-          description: 'Fresh seafood selection',
-          image: 'images/products/meat-products-03.jpg',
-        },
-        {
-          id: 4,
-          name: 'Groceries',
-          slug: 'groceries',
-          description: 'Halal groceries and essentials',
-          image: 'images/products/meat-products-04.jpg',
-        },
-        {
-          id: 5,
-          name: 'Spices',
-          slug: 'spices',
-          description: 'Premium spices and seasonings',
-          image: 'images/products/meat-products-05.jpg',
-        },
-        {
-          id: 6,
-          name: 'Frozen',
-          slug: 'frozen',
-          description: 'Frozen halal products',
-          image: 'images/products/meat-products-06.jpg',
-        },
-      ]
+      const response = await apiFetch<CategoriesResponse>('/shop/categories')
+      categories.value = response.categories.map(adaptCategory)
+      flatCategories.value = flattenCategories(categories.value)
+    } catch (error) {
+      console.error('Failed to fetch categories', error)
+      categories.value = []
+      flatCategories.value = []
     } finally {
       isLoading.value = false
     }
   }
 
   const searchProducts = async (query: string) => {
-    return await fetchProducts({ search: query })
+    const { apiFetch } = useApi()
+    isLoading.value = true
+    try {
+      const response = await apiFetch<{ data: any[] }>('/shop/search', {
+        query: { q: query },
+      })
+      products.value = adaptProducts(response.data)
+    } catch (error) {
+      console.error('Search failed', error)
+      products.value = []
+    } finally {
+      isLoading.value = false
+    }
   }
 
   return {
@@ -133,6 +168,7 @@ export const useProductsStore = defineStore('products', () => {
     featuredProducts,
     latestProducts,
     categories,
+    flatCategories,
     currentProduct,
     isLoading,
     pagination,

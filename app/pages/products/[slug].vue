@@ -2,79 +2,69 @@
 const route = useRoute()
 const slug = route.params.slug as string
 const { getAssetUrl } = useAsset()
+const productsStore = useProductsStore()
+const cartStore = useCartStore()
 
-// TODO: Fetch product from API
-const product = ref({
-  id: 1,
-  name: 'Marinated Halal Lamb Leg Steak (Boneless) Regular',
-  slug: slug,
-  sku: 'LAMB-001',
-  short_description: 'Premium quality halal lamb leg steak, boneless and marinated',
-  description: `
-    <p>Our Marinated Halal Lamb Leg Steak is a premium cut that's perfect for grilling, roasting, or pan-frying. Each piece is carefully selected, hand-trimmed, and marinated with our special blend of spices to ensure maximum flavour and tenderness.</p>
-    <p>Key features:</p>
-    <ul>
-      <li>100% Halal certified</li>
-      <li>Boneless for easy preparation</li>
-      <li>Pre-marinated for convenience</li>
-      <li>Premium quality lamb</li>
-    </ul>
-  `,
-  price: 16.99,
-  compare_at_price: 19.99,
-  featured_image: 'images/products/meat-products-07.jpg',
-  images: [
-    { id: 1, url: 'images/products/meat-products-07.jpg', alt: 'Product image 1', position: 1 },
-    { id: 2, url: 'images/products/meat-products-08.jpg', alt: 'Product image 2', position: 2 },
-    { id: 3, url: 'images/products/meat-products-09.jpg', alt: 'Product image 3', position: 3 },
-  ],
-  category: { id: 1, name: 'Halal Lamb', slug: 'halal-lamb' },
-  category_id: 1,
-  weight: 500,
-  weight_unit: 'g' as const,
-  stock_quantity: 50,
-  stock_status: 'in_stock' as const,
-  is_active: true,
-  is_featured: true,
-  is_new: true,
-  halal_certified: true,
-  has_variants: false,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-})
+const { data: product, error } = await useAsyncData(`product-${slug}`, () =>
+  productsStore.fetchProduct(slug)
+)
+
+if (!product.value && !error.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Product not found' })
+}
 
 const selectedImage = ref(0)
 const quantity = ref(1)
-const cartStore = useCartStore()
+const selectedVariantId = ref<number | null>(null)
 const isAdding = ref(false)
 
-const handleAddToCart = async () => {
-  isAdding.value = true
-  await cartStore.addItem(product.value.id, quantity.value)
-  isAdding.value = false
-}
+// Default to first variant if product has variants
+watchEffect(() => {
+  if (product.value?.has_variants && product.value.variants?.length && !selectedVariantId.value) {
+    selectedVariantId.value = product.value.variants[0].id
+  }
+})
+
+const selectedVariant = computed(() =>
+  product.value?.variants?.find(v => v.id === selectedVariantId.value)
+)
+
+const displayPrice = computed(() => selectedVariant.value?.price ?? product.value?.price ?? 0)
+const displayCompareAt = computed(
+  () => selectedVariant.value?.compare_at_price ?? product.value?.compare_at_price
+)
 
 const hasDiscount = computed(
-  () => product.value.compare_at_price && product.value.compare_at_price > product.value.price
+  () => !!displayCompareAt.value && displayCompareAt.value > displayPrice.value
 )
 
 const discountPercentage = computed(() => {
-  if (!hasDiscount.value) return 0
-  return Math.round(
-    ((product.value.compare_at_price! - product.value.price) / product.value.compare_at_price!) *
-      100
-  )
+  if (!hasDiscount.value || !displayCompareAt.value) return 0
+  return Math.round(((displayCompareAt.value - displayPrice.value) / displayCompareAt.value) * 100)
 })
 
+const handleAddToCart = async () => {
+  if (!product.value) return
+  isAdding.value = true
+  try {
+    await cartStore.addItem(product.value.id, quantity.value, selectedVariantId.value ?? undefined)
+  } finally {
+    isAdding.value = false
+  }
+}
+
 useSeoMeta({
-  title: () => `${product.value.name} | Premium Abrahimic Foods`,
-  description: () => product.value.short_description,
+  title: () => `${product.value?.name ?? 'Product'} | Premium Abrahimic Foods`,
+  description: () => product.value?.short_description ?? '',
 })
 
 const breadcrumbs = computed(() => [
   { label: 'Products', to: '/products' },
-  { label: product.value.category?.name || '', to: `/categories/${product.value.category?.slug}` },
-  { label: product.value.name },
+  {
+    label: product.value?.category?.name || '',
+    to: `/categories/${product.value?.category?.slug}`,
+  },
+  { label: product.value?.name || '' },
 ])
 </script>
 
@@ -83,21 +73,25 @@ const breadcrumbs = computed(() => [
     <div class="container py-8">
       <TheBreadcrumb :items="breadcrumbs" />
 
-      <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+      <div v-if="!product" class="bg-white rounded-xl shadow-sm p-8 text-center">
+        <p class="text-gray-500">Product not found.</p>
+      </div>
+
+      <div v-else class="bg-white rounded-xl shadow-sm p-6 md:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Product Images -->
           <div class="space-y-4">
-            <!-- Main Image -->
-            <div class="aspect-square rounded-xl overflow-hidden bg-gray-100">
+            <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
               <img
+                v-if="product.images[selectedImage]?.url || product.featured_image"
                 :src="getAssetUrl(product.images[selectedImage]?.url || product.featured_image)"
                 :alt="product.name"
                 class="w-full h-full object-cover"
               />
+              <Icon v-else name="heroicons:photo" class="w-24 h-24 text-gray-300" />
             </div>
 
-            <!-- Thumbnail Gallery -->
-            <div v-if="product.images.length > 1" class="flex gap-2">
+            <div v-if="product.images.length > 1" class="flex gap-2 flex-wrap">
               <button
                 v-for="(image, index) in product.images"
                 :key="image.id"
@@ -115,8 +109,7 @@ const breadcrumbs = computed(() => [
           <!-- Product Info -->
           <div class="space-y-6">
             <!-- Badges -->
-            <div class="flex gap-2">
-              <PBadge v-if="product.is_new" variant="gold">New</PBadge>
+            <div class="flex gap-2 flex-wrap">
               <PBadge v-if="hasDiscount" variant="error">{{ discountPercentage }}% Off</PBadge>
               <PBadge v-if="product.halal_certified" variant="success">
                 <Icon name="heroicons:check-badge" class="w-3 h-3 mr-1" />
@@ -135,20 +128,39 @@ const breadcrumbs = computed(() => [
             <!-- Price -->
             <div class="flex items-baseline gap-3">
               <span class="text-3xl font-bold text-pif-green-dark">
-                {{ formatCurrency(product.price) }}
+                {{ formatCurrency(displayPrice) }}
               </span>
               <span v-if="hasDiscount" class="text-xl text-gray-400 line-through">
-                {{ formatCurrency(product.compare_at_price!) }}
+                {{ formatCurrency(displayCompareAt!) }}
               </span>
             </div>
 
             <!-- Short Description -->
             <p class="text-gray-600">{{ product.short_description }}</p>
 
-            <!-- Weight -->
-            <p v-if="product.weight" class="text-sm text-gray-500">
-              Weight: {{ product.weight }}{{ product.weight_unit }}
-            </p>
+            <!-- Variant Selector -->
+            <div v-if="product.has_variants && product.variants?.length" class="space-y-2">
+              <label class="text-sm font-medium text-gray-700">Select option</label>
+              <div class="grid grid-cols-1 gap-2">
+                <button
+                  v-for="variant in product.variants"
+                  :key="variant.id"
+                  type="button"
+                  :class="[
+                    'flex items-center justify-between px-4 py-3 border rounded-lg text-left transition-colors',
+                    selectedVariantId === variant.id
+                      ? 'border-pif-green-dark bg-pif-green-dark/5'
+                      : 'border-gray-300 hover:border-pif-green',
+                  ]"
+                  @click="selectedVariantId = variant.id"
+                >
+                  <span class="text-sm font-medium">{{ variant.name }}</span>
+                  <span class="text-sm font-semibold text-pif-green-dark">
+                    {{ formatCurrency(variant.price) }}
+                  </span>
+                </button>
+              </div>
+            </div>
 
             <!-- Stock Status -->
             <div class="flex items-center gap-2">
@@ -205,9 +217,21 @@ const breadcrumbs = computed(() => [
         </div>
 
         <!-- Product Description -->
-        <div class="mt-12 pt-8 border-t">
+        <div v-if="product.description" class="mt-12 pt-8 border-t">
           <h2 class="font-heading text-xl text-pif-black mb-4">Product Description</h2>
           <div class="prose prose-gray max-w-none" v-html="product.description" />
+        </div>
+
+        <!-- Ingredients & Allergens -->
+        <div v-if="product.ingredients || product.allergens?.length" class="mt-8 pt-8 border-t grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-if="product.ingredients">
+            <h3 class="font-heading text-lg text-pif-black mb-2">Ingredients</h3>
+            <p class="text-sm text-gray-600">{{ product.ingredients }}</p>
+          </div>
+          <div v-if="product.allergens?.length">
+            <h3 class="font-heading text-lg text-pif-black mb-2">Allergens</h3>
+            <p class="text-sm text-gray-600">{{ product.allergens.join(', ') }}</p>
+          </div>
         </div>
       </div>
     </div>

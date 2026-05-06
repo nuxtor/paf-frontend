@@ -11,15 +11,47 @@ const filters = ref({
 })
 
 useSeoMeta({
-  title: 'All Products | Premium Abrahimic Foods',
+  title: () =>
+    filters.value.search
+      ? `Search: ${filters.value.search} | Premium Abrahimic Foods`
+      : 'All Products | Premium Abrahimic Foods',
   description: 'Browse our full range of premium halal meat and food products.',
 })
 
-onMounted(() => {
-  productsStore.fetchProducts(filters.value)
-})
+const loadProducts = () => {
+  if (filters.value.search.trim()) {
+    productsStore.searchProducts(filters.value.search.trim())
+  } else {
+    productsStore.fetchProducts({
+      sort: filters.value.sort as any,
+      page: filters.value.page,
+    })
+  }
+}
 
-const breadcrumbs = [{ label: 'Products' }]
+onMounted(loadProducts)
+
+watch(
+  () => route.query.search,
+  (q) => {
+    filters.value.search = (q as string) || ''
+    loadProducts()
+  }
+)
+
+watch(
+  () => filters.value.sort,
+  () => {
+    filters.value.page = 1
+    loadProducts()
+  }
+)
+
+const breadcrumbs = computed(() =>
+  filters.value.search
+    ? [{ label: 'Products', to: '/products' }, { label: `Search: ${filters.value.search}` }]
+    : [{ label: 'Products' }]
+)
 </script>
 
 <template>
@@ -28,7 +60,9 @@ const breadcrumbs = [{ label: 'Products' }]
       <TheBreadcrumb :items="breadcrumbs" />
 
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <h1 class="font-heading text-3xl text-pif-black">All Products</h1>
+        <h1 class="font-heading text-3xl text-pif-black">
+          {{ filters.search ? `Search results for "${filters.search}"` : 'All Products' }}
+        </h1>
 
         <!-- Filters -->
         <div class="flex items-center gap-4">

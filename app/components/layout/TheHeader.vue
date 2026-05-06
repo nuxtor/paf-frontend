@@ -122,15 +122,27 @@ onUnmounted(() => {
     </div>
 
     <!-- Main Header: Logo -->
-    <div class="py-6 text-center">
-      <NuxtLink to="/" class="inline-block">
-        <h1 class="font-heading text-2xl md:text-3xl text-pif-green-dark dark:text-pif-gold tracking-wide">
-          Premium Abrahimic Foods
-        </h1>
-        <div class="w-full h-[2px] bg-pif-gold my-2" />
-        <p class="text-xs md:text-sm text-pif-green dark:text-gray-400 tracking-[0.3em] uppercase">
-          The Premium Halal Food
-        </p>
+    <div class="py-6">
+      <NuxtLink to="/" class="flex items-center justify-center gap-4 md:gap-8">
+        <img
+          src="/images/logo.png"
+          alt="Premium Abrahimic Foods"
+          class="h-16 md:h-24 w-auto flex-shrink-0"
+        />
+        <div class="text-center">
+          <h1 class="font-heading text-2xl md:text-3xl text-pif-green-dark dark:text-pif-gold tracking-wide">
+            Premium Abrahimic Foods
+          </h1>
+          <div class="w-full h-[2px] bg-pif-gold my-2" />
+          <p class="text-xs md:text-sm text-pif-green dark:text-gray-400 tracking-[0.3em] uppercase">
+            The Premium Halal Food
+          </p>
+        </div>
+        <img
+          src="/images/logo.png"
+          alt="Premium Abrahimic Foods"
+          class="hidden sm:block h-16 md:h-24 w-auto flex-shrink-0"
+        />
       </NuxtLink>
     </div>
 

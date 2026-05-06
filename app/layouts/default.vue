@@ -18,6 +18,7 @@ onMounted(() => {
     <TheFooter />
 
     <CartDrawer />
+    <TheSearchModal />
     <ToastContainer />
   </div>
 </template>

@@ -30,14 +30,22 @@ const hasDiscount = computed(
     <!-- Image -->
     <NuxtLink
       :to="`/products/${product.slug}`"
-      class="block aspect-square overflow-hidden rounded-t-xl"
+      class="block aspect-square overflow-hidden rounded-t-xl bg-pif-cream dark:bg-dark-300"
     >
       <img
+        v-if="product.featured_image"
         :src="getAssetUrl(product.featured_image)"
         :alt="product.name"
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
+      <div
+        v-else
+        class="w-full h-full flex flex-col items-center justify-center text-gray-300 dark:text-gray-600"
+      >
+        <Icon name="heroicons:photo" class="w-12 h-12 mb-1" />
+        <span class="text-xs">No image</span>
+      </div>
     </NuxtLink>
 
     <!-- Badges -->

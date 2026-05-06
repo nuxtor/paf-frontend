@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import type { Customer, LoginCredentials, RegisterData } from '~/types/customer'
 
+interface AuthResponse {
+  customer: Customer
+  token: string
+}
+
 export const useAuthStore = defineStore('auth', () => {
   // State
   const user = ref<Customer | null>(null)
@@ -16,63 +21,153 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Actions
   const login = async (credentials: LoginCredentials) => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      // const response = await apiFetch('/auth/login', {
-      //   method: 'POST',
-      //   body: credentials,
-      // })
-      // token.value = response.token
-      // user.value = response.user
-
-      // For now, navigate to home
-      navigateTo('/')
+      const response = await apiFetch<AuthResponse>('/auth/login', {
+        method: 'POST',
+        body: credentials,
+      })
+      token.value = response.token
+      user.value = response.customer
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Welcome back!')
+      navigateTo('/account')
     } finally {
       isLoading.value = false
     }
   }
 
   const register = async (data: RegisterData) => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      navigateTo('/auth/login')
+      const response = await apiFetch<AuthResponse>('/auth/register', {
+        method: 'POST',
+        body: data,
+      })
+      token.value = response.token
+      user.value = response.customer
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Account created — welcome!')
+      navigateTo('/account')
     } finally {
       isLoading.value = false
     }
   }
 
   const logout = async () => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
+      if (token.value) {
+        await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {})
+      }
+    } finally {
       token.value = null
       user.value = null
-      navigateTo('/')
-    } finally {
       isLoading.value = false
+      navigateTo('/')
     }
   }
 
   const fetchUser = async () => {
     if (!token.value) return
-
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
+      const response = await apiFetch<{ customer: Customer }>('/auth/user')
+      user.value = response.customer
+    } catch {
+      token.value = null
+      user.value = null
     } finally {
       isLoading.value = false
     }
   }
 
   const updateProfile = async (data: Partial<Customer>) => {
+    const { apiFetch } = useApi()
     isLoading.value = true
     try {
-      // TODO: Implement API call
-      if (user.value) {
-        Object.assign(user.value, data)
-      }
+      const response = await apiFetch<{ customer: Customer }>('/account', {
+        method: 'PUT',
+        body: data,
+      })
+      user.value = response.customer
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Profile updated')
+    } catch (error: any) {
+      const uiStore = useUiStore()
+      uiStore.addToast('error', error?.data?.message || 'Failed to update profile')
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const changePassword = async (payload: {
+    current_password: string
+    password: string
+    password_confirmation: string
+  }) => {
+    const { apiFetch } = useApi()
+    isLoading.value = true
+    try {
+      await apiFetch('/account/password', {
+        method: 'PUT',
+        body: payload,
+      })
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Password updated')
+    } catch (error: any) {
+      const uiStore = useUiStore()
+      uiStore.addToast('error', error?.data?.message || 'Failed to update password')
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const forgotPassword = async (email: string) => {
+    const { apiFetch } = useApi()
+    isLoading.value = true
+    try {
+      await apiFetch('/auth/forgot-password', {
+        method: 'POST',
+        body: { email },
+      })
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Password reset link sent')
+    } catch (error: any) {
+      const uiStore = useUiStore()
+      uiStore.addToast('error', error?.data?.message || 'Failed to send reset link')
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const resetPassword = async (payload: {
+    email: string
+    token: string
+    password: string
+    password_confirmation: string
+  }) => {
+    const { apiFetch } = useApi()
+    isLoading.value = true
+    try {
+      await apiFetch('/auth/reset-password', {
+        method: 'POST',
+        body: payload,
+      })
+      const uiStore = useUiStore()
+      uiStore.addToast('success', 'Password reset successfully — please sign in')
+      navigateTo('/auth/login')
+    } catch (error: any) {
+      const uiStore = useUiStore()
+      uiStore.addToast('error', error?.data?.message || 'Failed to reset password')
+      throw error
     } finally {
       isLoading.value = false
     }
@@ -115,6 +210,9 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     fetchUser,
     updateProfile,
+    changePassword,
+    forgotPassword,
+    resetPassword,
     initAuth,
   }
 })

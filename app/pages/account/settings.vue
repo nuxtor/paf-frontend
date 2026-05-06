@@ -9,21 +9,71 @@ useSeoMeta({
   title: 'Account Settings | Premium Abrahimic Foods',
 })
 
-const form = ref({
+const profileForm = ref({
   first_name: authStore.user?.first_name || '',
   last_name: authStore.user?.last_name || '',
   email: authStore.user?.email || '',
   phone: authStore.user?.phone || '',
 })
 
-const isLoading = ref(false)
+watch(
+  () => authStore.user,
+  (u) => {
+    if (u) {
+      profileForm.value = {
+        first_name: u.first_name || '',
+        last_name: u.last_name || '',
+        email: u.email || '',
+        phone: u.phone || '',
+      }
+    }
+  },
+  { immediate: true }
+)
 
-const handleSubmit = async () => {
-  isLoading.value = true
+const isSavingProfile = ref(false)
+const handleProfileSubmit = async () => {
+  isSavingProfile.value = true
   try {
-    await authStore.updateProfile(form.value)
+    await authStore.updateProfile(profileForm.value)
+  } catch {
+    // toast handled by store
   } finally {
-    isLoading.value = false
+    isSavingProfile.value = false
+  }
+}
+
+const passwordForm = ref({
+  current_password: '',
+  password: '',
+  password_confirmation: '',
+})
+const passwordError = ref('')
+const isSavingPassword = ref(false)
+
+const handlePasswordSubmit = async () => {
+  passwordError.value = ''
+  if (passwordForm.value.password !== passwordForm.value.password_confirmation) {
+    passwordError.value = 'New passwords do not match'
+    return
+  }
+  if (passwordForm.value.password.length < 8) {
+    passwordError.value = 'New password must be at least 8 characters'
+    return
+  }
+
+  isSavingPassword.value = true
+  try {
+    await authStore.changePassword(passwordForm.value)
+    passwordForm.value = {
+      current_password: '',
+      password: '',
+      password_confirmation: '',
+    }
+  } catch (e: any) {
+    passwordError.value = e?.data?.message || 'Failed to update password'
+  } finally {
+    isSavingPassword.value = false
   }
 }
 </script>
@@ -36,14 +86,14 @@ const handleSubmit = async () => {
       <!-- Profile Information -->
       <PCard>
         <h2 class="font-heading text-lg text-pif-black mb-4">Profile Information</h2>
-        <form class="space-y-4" @submit.prevent="handleSubmit">
+        <form class="space-y-4" @submit.prevent="handleProfileSubmit">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <PInput v-model="form.first_name" label="First Name" required />
-            <PInput v-model="form.last_name" label="Last Name" required />
-            <PInput v-model="form.email" label="Email" type="email" required />
-            <PInput v-model="form.phone" label="Phone" type="tel" />
+            <PInput v-model="profileForm.first_name" label="First Name" required />
+            <PInput v-model="profileForm.last_name" label="Last Name" required />
+            <PInput v-model="profileForm.email" label="Email" type="email" required />
+            <PInput v-model="profileForm.phone" label="Phone" type="tel" />
           </div>
-          <PButton type="submit" variant="primary" :loading="isLoading">
+          <PButton type="submit" variant="primary" :loading="isSavingProfile">
             Save Changes
           </PButton>
         </form>
@@ -52,29 +102,33 @@ const handleSubmit = async () => {
       <!-- Change Password -->
       <PCard>
         <h2 class="font-heading text-lg text-pif-black mb-4">Change Password</h2>
-        <form class="space-y-4" @submit.prevent>
-          <PInput label="Current Password" type="password" />
+        <form class="space-y-4" @submit.prevent="handlePasswordSubmit">
+          <div v-if="passwordError" class="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+            {{ passwordError }}
+          </div>
           <PInput
+            v-model="passwordForm.current_password"
+            label="Current Password"
+            type="password"
+            required
+          />
+          <PInput
+            v-model="passwordForm.password"
             label="New Password"
             type="password"
-            hint="Must be at least 8 characters with one uppercase and one number"
+            hint="Must be at least 8 characters"
+            required
           />
-          <PInput label="Confirm New Password" type="password" />
-          <PButton type="submit" variant="primary">
+          <PInput
+            v-model="passwordForm.password_confirmation"
+            label="Confirm New Password"
+            type="password"
+            required
+          />
+          <PButton type="submit" variant="primary" :loading="isSavingPassword">
             Update Password
           </PButton>
         </form>
-      </PCard>
-
-      <!-- Delete Account -->
-      <PCard>
-        <h2 class="font-heading text-lg text-red-600 mb-4">Delete Account</h2>
-        <p class="text-gray-600 mb-4">
-          Once you delete your account, there is no going back. Please be certain.
-        </p>
-        <PButton variant="outline" class="!border-red-500 !text-red-500 hover:!bg-red-500 hover:!text-white">
-          Delete Account
-        </PButton>
       </PCard>
     </div>
   </div>

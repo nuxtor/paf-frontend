@@ -1,0 +1,665 @@
+openapi: 3.0.3
+info:
+  title: Premium Abrahamic Foods API
+  description: |
+    REST API for the PAF e-commerce backend. Used by the Vue SPA frontend.
+    Auth is Sanctum bearer tokens.
+  version: 1.0.0
+servers:
+  - url: http://api.premiumabrahamicfoods.co.uk/api/v1
+    description: Staging
+tags:
+  - name: Auth
+  - name: Shop
+  - name: Cart
+  - name: Checkout
+  - name: Account
+  - name: Addresses
+  - name: Orders
+  - name: Wholesale
+  - name: Webhooks
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Address:
+      type: object
+      required: [first_name, last_name, address_line_1, city, postcode, country]
+      properties:
+        first_name: { type: string, maxLength: 255 }
+        last_name: { type: string, maxLength: 255 }
+        company: { type: string, nullable: true }
+        address_line_1: { type: string, maxLength: 255 }
+        address_line_2: { type: string, nullable: true }
+        city: { type: string, maxLength: 100 }
+        county: { type: string, nullable: true }
+        postcode: { type: string, maxLength: 20 }
+        country: { type: string, minLength: 2, maxLength: 2, example: GB }
+        phone: { type: string, nullable: true }
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string, nullable: true }
+        image: { type: string, nullable: true }
+        parent: { $ref: '#/components/schemas/Category' }
+        children:
+          type: array
+          items: { $ref: '#/components/schemas/Category' }
+        products_count: { type: integer }
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        sku: { type: string }
+        short_description: { type: string }
+        description: { type: string }
+        price: { type: string, example: "9.99" }
+        compare_at_price: { type: string, nullable: true }
+        unit: { type: string, example: each }
+        stock_status: { type: string, enum: [in_stock, out_of_stock, backorder] }
+        is_featured: { type: boolean }
+        halal_certification: { type: string, nullable: true }
+        ingredients: { type: string, nullable: true }
+        allergens: { type: string, nullable: true }
+        storage_instructions: { type: string, nullable: true }
+        country_of_origin: { type: string, nullable: true }
+        category: { $ref: '#/components/schemas/Category' }
+        images:
+          type: array
+          items: { type: object }
+        primary_image: { type: object }
+        variants:
+          type: array
+          items: { type: object }
+        has_variants: { type: boolean }
+        discount_percentage: { type: integer, nullable: true }
+    Customer:
+      type: object
+      properties:
+        id: { type: integer }
+        first_name: { type: string }
+        last_name: { type: string }
+        full_name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, nullable: true }
+        type: { type: string, enum: [retail, wholesale] }
+        wholesale_status: { type: string, nullable: true }
+        company_name: { type: string, nullable: true }
+        is_wholesale: { type: boolean }
+        created_at: { type: string, format: date-time }
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        order_number: { type: string, example: PAF-20260505-0001 }
+        status:
+          type: string
+          enum: [pending, confirmed, processing, ready_to_ship, shipped, out_for_delivery, delivered, cancelled, refunded, partially_refunded]
+        payment_status:
+          type: string
+          enum: [pending, paid, failed, refunded, partially_refunded]
+        subtotal: { type: string }
+        discount_amount: { type: string }
+        shipping_amount: { type: string }
+        tax_amount: { type: string }
+        total: { type: string }
+        currency: { type: string, example: GBP }
+        shipping_address: { type: object }
+        billing_address: { type: object }
+        shipping_method: { type: string }
+        promotion_code: { type: string, nullable: true }
+        customer_notes: { type: string, nullable: true }
+        items: { type: array, items: { type: object } }
+        shipments: { type: array, items: { type: object } }
+        paid_at: { type: string, format: date-time, nullable: true }
+        shipped_at: { type: string, format: date-time, nullable: true }
+        delivered_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+    AuthResponse:
+      type: object
+      properties:
+        customer: { $ref: '#/components/schemas/Customer' }
+        token: { type: string, example: "1|abc123..." }
+    ValidationError:
+      type: object
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+paths:
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [first_name, last_name, email, password, password_confirmation]
+              properties:
+                first_name: { type: string }
+                last_name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+                phone: { type: string, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                revoke_others: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '422':
+          description: Invalid credentials
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: OK }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, token, password, password_confirmation]
+              properties:
+                email: { type: string, format: email }
+                token: { type: string }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      security: [{ BearerAuth: [] }]
+      summary: Revoke current token
+      responses:
+        '200': { description: OK }
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      security: [{ BearerAuth: [] }]
+      summary: Current authenticated customer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer: { $ref: '#/components/schemas/Customer' }
+
+  /shop/categories:
+    get:
+      tags: [Shop]
+      summary: List categories
+      responses:
+        '200':
+          description: OK
+
+  /shop/categories/{slug}:
+    get:
+      tags: [Shop]
+      summary: Get category by slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+
+  /shop/products:
+    get:
+      tags: [Shop]
+      summary: List products
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [newest, price_asc, price_desc, name, bestselling]
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 12 }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: Paginated list of products
+
+  /shop/products/featured:
+    get:
+      tags: [Shop]
+      summary: Featured products (max 8)
+      responses:
+        '200': { description: OK }
+
+  /shop/products/{slug}:
+    get:
+      tags: [Shop]
+      summary: Get product detail with pricing
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+
+  /shop/search:
+    get:
+      tags: [Shop]
+      summary: Search products
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        '200': { description: OK }
+
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get cart
+      parameters:
+        - in: header
+          name: X-Cart-Session
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add cart item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, quantity]
+              properties:
+                product_id: { type: integer }
+                variant_id: { type: integer, nullable: true }
+                quantity: { type: integer, minimum: 1, maximum: 999 }
+                session_id: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /cart/items/{itemKey}:
+    put:
+      tags: [Cart]
+      summary: Update cart item quantity
+      parameters:
+        - in: path
+          name: itemKey
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 0 }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Cart]
+      summary: Remove cart item
+      parameters:
+        - in: path
+          name: itemKey
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /cart/promo:
+    post:
+      tags: [Cart]
+      summary: Apply promo code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        '200': { description: OK }
+        '422': { description: Invalid promotion code }
+    delete:
+      tags: [Cart]
+      summary: Remove promo code
+      responses:
+        '200': { description: OK }
+
+  /shipping/rates:
+    post:
+      tags: [Checkout]
+      summary: Get shipping rates (DHL)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200': { description: OK }
+
+  /checkout:
+    post:
+      tags: [Checkout]
+      summary: Create order + Stripe payment intent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, billing_address, shipping_address, shipping_method, shipping_amount]
+              properties:
+                email: { type: string, format: email }
+                phone: { type: string }
+                session_id: { type: string }
+                billing_address: { $ref: '#/components/schemas/Address' }
+                shipping_address: { $ref: '#/components/schemas/Address' }
+                shipping_method: { type: string }
+                shipping_amount: { type: number }
+                notes: { type: string, maxLength: 1000 }
+      responses:
+        '200':
+          description: Order created with Stripe client_secret
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order: { $ref: '#/components/schemas/Order' }
+                  client_secret: { type: string }
+
+  /checkout/confirm:
+    post:
+      tags: [Checkout]
+      summary: Confirm order after Stripe payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_number]
+              properties:
+                order_number: { type: string }
+      responses:
+        '200': { description: OK }
+        '400': { description: Payment not confirmed }
+
+  /webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      summary: Stripe webhook receiver (server-to-server)
+      responses:
+        '200': { description: Acknowledged }
+
+  /account:
+    get:
+      tags: [Account]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Account]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name: { type: string }
+                last_name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /account/password:
+    put:
+      tags: [Account]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password: { type: string }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /addresses:
+    get:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+    post:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/Address'
+                - type: object
+                  required: [type]
+                  properties:
+                    type: { type: string, enum: [billing, shipping] }
+                    is_default: { type: boolean }
+                    label: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /addresses/{id}:
+    get:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+    put:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Address' }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '204': { description: Deleted }
+
+  /addresses/{id}/default:
+    post:
+      tags: [Addresses]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+
+  /orders:
+    get:
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      summary: List customer's orders
+      responses:
+        '200': { description: OK }
+
+  /orders/{orderNumber}:
+    get:
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orderNumber
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Order' }
+        '404': { description: Not found }
+
+  /orders/{orderNumber}/cancel:
+    post:
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - in: path
+          name: orderNumber
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Cancelled }
+
+  /wholesale/application:
+    get:
+      tags: [Wholesale]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: OK }
+        '404': { description: No application yet }
+    post:
+      tags: [Wholesale]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company_name, contact_name, email, phone, address]
+              properties:
+                company_name: { type: string }
+                contact_name: { type: string }
+                email: { type: string, format: email }
+                phone: { type: string }
+                company_registration: { type: string }
+                vat_number: { type: string }
+                business_description: { type: string }
+                website: { type: string, format: uri }
+                address: { $ref: '#/components/schemas/Address' }
+      responses:
+        '201': { description: Submitted }

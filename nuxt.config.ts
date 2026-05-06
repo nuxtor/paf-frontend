@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  ssr: false, // SPA mode for static hosting
+  ssr: true,
 
   components: [
     {
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
   ],
 
   app: {
-    baseURL: '/paf/',
+    baseURL: '/',
     head: {
       htmlAttrs: { lang: 'en-GB' },
       title: 'Premium Abrahimic Foods | Quality Halal Meat & Food Delivery UK',
@@ -53,7 +53,8 @@ export default defineNuxtConfig({
     stripeSecretKey: '',
     apiBackendUrl: process.env.NUXT_API_BACKEND_URL || 'http://paf-backend.test',
     public: {
-      apiBaseUrl: '/api/v1',
+      apiBaseUrl: process.env.NUXT_API_BACKEND_URL ? `${process.env.NUXT_API_BACKEND_URL}/api/v1` : 'https://api.premiumabrahamicfoods.co.uk/api/v1',
+      imageBaseUrl: process.env.NUXT_API_BACKEND_URL ? `${process.env.NUXT_API_BACKEND_URL}/storage` : 'https://api.premiumabrahamicfoods.co.uk/storage',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       siteName: 'Premium Abrahimic Foods',
       stripePublishableKey: '',
@@ -64,6 +65,12 @@ export default defineNuxtConfig({
 
   tailwindcss: {
     configPath: 'tailwind.config.ts',
+  },
+
+  vite: {
+    server: {
+      allowedHosts: ['premiumabrahamicfoods.co.uk', 'www.premiumabrahamicfoods.co.uk'],
+    },
   },
 
   pinia: {
