@@ -1,16 +1,50 @@
 <script setup lang="ts">
 import { FOOTER_POLICIES, FOOTER_INFO } from '~/utils/constants'
+import type { CmsMenuItem } from '~/types/cms'
 
 const appConfig = useAppConfig()
+const cmsStore = useCmsStore()
 const { getAssetUrl } = useAsset()
 const currentYear = new Date().getFullYear()
 
-// Safe computed properties for SSR
 const contactEmail = computed(() => appConfig?.contact?.email ?? '')
 const contactPhone = computed(() => appConfig?.contact?.phone ?? '')
 const socialFacebook = computed(() => appConfig?.social?.facebook ?? '')
 const socialInstagram = computed(() => appConfig?.social?.instagram ?? '')
 const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
+
+const toFallbackItems = (links: ReadonlyArray<{ name: string; path: string }>): CmsMenuItem[] =>
+  links.map((l, i) => ({
+    id: -(i + 1),
+    label: l.name,
+    link_type: 'url',
+    url: l.path,
+    target: '_self',
+    icon: null,
+    sort_order: i,
+    children: [],
+  }))
+
+const footerColumns = computed<{ heading: string; items: CmsMenuItem[] }[]>(() => {
+  const menu = cmsStore.footerMenu
+  if (menu?.items?.length) {
+    const topLevel = menu.items
+    const grouped = topLevel.some((i) => i.children?.length)
+    if (grouped) {
+      return topLevel.map((i) => ({
+        heading: i.label,
+        items: i.children ?? [],
+      }))
+    }
+    return [{ heading: 'Quick Links', items: topLevel }]
+  }
+  return [
+    { heading: 'Policies', items: toFallbackItems(FOOTER_POLICIES) },
+    { heading: 'Information', items: toFallbackItems(FOOTER_INFO) },
+  ]
+})
+
+const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
 </script>
 
 <template>
@@ -28,7 +62,6 @@ const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
           The Premium Halal Food
         </p>
-        <!-- Social Links Mobile -->
         <div class="flex justify-center gap-3 mt-4">
           <a
             v-if="socialFacebook"
@@ -62,31 +95,31 @@ const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
 
       <!-- Links Grid -->
       <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        <!-- Policies -->
-        <div class="text-center md:text-left">
-          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mb-3 md:mb-4">Policies</h4>
+        <div
+          v-for="column in footerColumns"
+          :key="column.heading"
+          class="text-center md:text-left"
+        >
+          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mb-3 md:mb-4">
+            {{ column.heading }}
+          </h4>
           <ul class="space-y-2">
-            <li v-for="link in FOOTER_POLICIES" :key="link.path">
-              <NuxtLink
-                :to="link.path"
+            <li v-for="link in column.items" :key="link.id">
+              <a
+                v-if="isExternal(link.url)"
+                :href="link.url"
+                :target="link.target && link.target !== '_self' ? link.target : '_blank'"
+                rel="noopener noreferrer"
                 class="text-sm md:text-base text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               >
-                {{ link.name }}
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Information -->
-        <div class="text-center md:text-left">
-          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mb-3 md:mb-4">Information</h4>
-          <ul class="space-y-2">
-            <li v-for="link in FOOTER_INFO" :key="link.path">
+                {{ link.label }}
+              </a>
               <NuxtLink
-                :to="link.path"
+                v-else
+                :to="link.url"
                 class="text-sm md:text-base text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               >
-                {{ link.name }}
+                {{ link.label }}
               </NuxtLink>
             </li>
           </ul>
@@ -129,7 +162,6 @@ const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
           <p class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">
             The Premium Halal Food
           </p>
-          <!-- Social Links Desktop -->
           <div class="flex gap-3 mt-4 lg:justify-end">
             <a
               v-if="socialFacebook"

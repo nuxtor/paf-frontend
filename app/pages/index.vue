@@ -1,4 +1,11 @@
 <script setup lang="ts">
+const cmsStore = useCmsStore()
+
+await useAsyncData('cms-home', async () => {
+  await cmsStore.fetchHome()
+  return true
+})
+
 useSeoMeta({
   title: 'Premium Abrahimic Foods | Quality Halal Meat & Food Delivery UK',
   description:
@@ -9,9 +16,13 @@ useSeoMeta({
 <template>
   <div>
     <HeroSection />
+    <PromoBlocks placement="homepage_top" />
     <WelcomeSection />
     <FeaturedCategories />
-    <CTASection />
+    <PromoBlocks placement="homepage_middle" />
     <LatestProducts />
+    <Testimonials />
+    <PromoBlocks placement="homepage_bottom" />
+    <CTASection />
   </div>
 </template>

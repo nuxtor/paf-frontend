@@ -89,7 +89,7 @@ export const MAIN_CATEGORIES = [
 
 export const NAV_LINKS = [
   { name: 'Home', path: '/' },
-  { name: 'About Us', path: '/about' },
+  { name: 'About Us', path: '/about-us' },
   { name: 'Wholesale', path: '/wholesale' },
   { name: 'Delivery', path: '/delivery' },
   { name: 'Contact', path: '/contact' },
@@ -103,7 +103,7 @@ export const FOOTER_POLICIES = [
 ] as const
 
 export const FOOTER_INFO = [
-  { name: 'About Us', path: '/about' },
+  { name: 'About Us', path: '/about-us' },
   { name: 'Customer Service', path: '/contact' },
   { name: 'Terms and Conditions', path: '/terms' },
   { name: 'FAQs', path: '/faqs' },

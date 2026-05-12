@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { NAV_LINKS, MAIN_CATEGORIES } from '~/utils/constants'
+import type { CmsMenuItem } from '~/types/cms'
 
 const cartStore = useCartStore()
 const uiStore = useUiStore()
+const cmsStore = useCmsStore()
 const { isDark, toggleTheme } = useTheme()
 
 const isScrolled = ref(false)
@@ -20,6 +22,33 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
+
+const fallbackCategoryNav: CmsMenuItem[] = MAIN_CATEGORIES.map((c, i) => ({
+  id: -(i + 1) * 100,
+  label: c.name,
+  link_type: 'category',
+  url: `/categories/${c.slug}`,
+  target: '_self',
+  icon: null,
+  sort_order: i,
+  children: c.children.map((child, j) => ({
+    id: -(i + 1) * 100 - (j + 1),
+    label: child.name,
+    link_type: 'category',
+    url: `/categories/${c.slug}/${child.slug}`,
+    target: '_self',
+    icon: null,
+    sort_order: j,
+    children: [],
+  })),
+}))
+
+const headerItems = computed<CmsMenuItem[]>(() => {
+  const items = cmsStore.headerMenu?.items
+  return items && items.length ? items : fallbackCategoryNav
+})
+
+const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
 </script>
 
 <template>
@@ -34,24 +63,20 @@ onUnmounted(() => {
     <div class="bg-gray-100 dark:bg-dark-100 text-sm py-2 border-b border-gray-200 dark:border-dark-600">
       <div class="container">
         <div class="flex items-center justify-between">
-          <!-- Left: Delivery Info -->
           <p class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">
             Nationwide Delivery | Free Delivery On Orders Over £50
           </p>
 
-          <!-- Center: Icons (Desktop) -->
           <div class="hidden md:flex items-center gap-4">
-            <!-- Theme Toggle -->
             <button
               class="theme-toggle"
-              @click="toggleTheme"
               :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+              @click="toggleTheme"
             >
               <Icon v-if="isDark" name="heroicons:sun" class="w-5 h-5" />
               <Icon v-else name="heroicons:moon" class="w-5 h-5" />
             </button>
 
-            <!-- Search -->
             <button
               class="p-1 text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               @click="uiStore.toggleSearch"
@@ -59,7 +84,6 @@ onUnmounted(() => {
               <Icon name="heroicons:magnifying-glass" class="w-5 h-5" />
             </button>
 
-            <!-- Account -->
             <NuxtLink
               to="/account"
               class="p-1 text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
@@ -67,7 +91,6 @@ onUnmounted(() => {
               <Icon name="heroicons:user" class="w-5 h-5" />
             </NuxtLink>
 
-            <!-- Cart -->
             <button
               class="relative p-1 text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               @click="uiStore.toggleCart"
@@ -82,7 +105,6 @@ onUnmounted(() => {
             </button>
           </div>
 
-          <!-- Right: Nav Links (Desktop) -->
           <nav class="hidden md:flex items-center gap-6">
             <NuxtLink
               v-for="link in NAV_LINKS"
@@ -94,9 +116,7 @@ onUnmounted(() => {
             </NuxtLink>
           </nav>
 
-          <!-- Mobile: Theme, Menu & Cart -->
           <div class="flex md:hidden items-center gap-2">
-            <!-- Theme Toggle Mobile -->
             <button
               class="p-1 text-gray-600 dark:text-gray-400"
               @click="toggleTheme"
@@ -146,53 +166,60 @@ onUnmounted(() => {
       </NuxtLink>
     </div>
 
-    <!-- Category Navigation -->
+    <!-- Category Navigation (CMS-driven) -->
     <nav class="bg-pif-green-dark relative">
       <div class="container">
         <ul class="hidden md:flex items-center justify-center gap-8 lg:gap-12">
           <li
-            v-for="category in MAIN_CATEGORIES"
-            :key="category.slug"
+            v-for="item in headerItems"
+            :key="item.id"
             class="relative group"
           >
-            <NuxtLink
-              :to="`/categories/${category.slug}`"
+            <component
+              :is="isExternal(item.url) ? 'a' : resolveComponent('NuxtLink')"
+              :to="!isExternal(item.url) ? item.url : undefined"
+              :href="isExternal(item.url) ? item.url : undefined"
+              :target="item.target && item.target !== '_self' ? item.target : undefined"
+              :rel="isExternal(item.url) ? 'noopener noreferrer' : undefined"
               class="inline-flex items-center gap-1 py-3 text-white text-sm font-medium hover:text-pif-gold transition-colors"
             >
-              {{ category.name }}
+              <Icon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
+              {{ item.label }}
               <Icon
-                v-if="category.children?.length"
+                v-if="item.children?.length"
                 name="heroicons:chevron-down"
                 class="w-3 h-3 transition-transform group-hover:rotate-180"
               />
-            </NuxtLink>
-            <!-- Dropdown -->
+            </component>
             <div
-              v-if="category.children?.length"
+              v-if="item.children?.length"
               class="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
             >
               <ul class="bg-white dark:bg-dark-200 rounded-lg shadow-lg dark:shadow-black/50 py-2 min-w-[180px] border border-transparent dark:border-dark-600">
-                <li v-for="child in category.children" :key="child.slug">
-                  <NuxtLink
-                    :to="`/categories/${category.slug}/${child.slug}`"
+                <li v-for="child in item.children" :key="child.id">
+                  <component
+                    :is="isExternal(child.url) ? 'a' : resolveComponent('NuxtLink')"
+                    :to="!isExternal(child.url) ? child.url : undefined"
+                    :href="isExternal(child.url) ? child.url : undefined"
+                    :target="child.target && child.target !== '_self' ? child.target : undefined"
+                    :rel="isExternal(child.url) ? 'noopener noreferrer' : undefined"
                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
                   >
-                    {{ child.name }}
-                  </NuxtLink>
+                    {{ child.label }}
+                  </component>
                 </li>
-                <li class="border-t border-gray-100 dark:border-dark-600 mt-2 pt-2">
+                <li v-if="!isExternal(item.url)" class="border-t border-gray-100 dark:border-dark-600 mt-2 pt-2">
                   <NuxtLink
-                    :to="`/categories/${category.slug}`"
+                    :to="item.url"
                     class="block px-4 py-2 text-sm font-medium text-pif-green-dark dark:text-pif-gold hover:bg-pif-cream dark:hover:bg-dark-400 transition-colors"
                   >
-                    View All {{ category.name }}
+                    View All {{ item.label }}
                   </NuxtLink>
                 </li>
               </ul>
             </div>
           </li>
         </ul>
-        <!-- Mobile: Show menu button or simplified nav -->
         <div class="md:hidden py-3 text-center">
           <button
             class="inline-flex items-center gap-2 text-white text-sm"
