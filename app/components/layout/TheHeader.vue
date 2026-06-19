@@ -52,13 +52,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
 </script>
 
 <template>
-  <header
-    :class="[
-      'sticky top-0 z-40 transition-shadow duration-300',
-      'bg-white dark:bg-pif-black',
-      isScrolled && 'shadow-md dark:shadow-black/50',
-    ]"
-  >
+  <header class="bg-white dark:bg-pif-black">
     <!-- Top Bar -->
     <div class="bg-gray-100 dark:bg-dark-100 text-sm py-2 border-b border-gray-200 dark:border-dark-600">
       <div class="container">
@@ -167,7 +161,12 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
     </div>
 
     <!-- Category Navigation (CMS-driven) -->
-    <nav class="bg-pif-green-dark relative">
+    <nav
+      :class="[
+        'sticky top-0 z-40 bg-pif-green-dark transition-shadow duration-300',
+        isScrolled && 'shadow-md dark:shadow-black/50',
+      ]"
+    >
       <div class="container">
         <ul class="hidden md:flex items-center justify-center gap-8 lg:gap-12">
           <li
