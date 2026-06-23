@@ -1,5 +1,5 @@
 export const useTheme = () => {
-  const colorMode = useState<'light' | 'dark'>('color-mode', () => 'light')
+  const colorMode = useState<'light' | 'dark'>('color-mode', () => 'dark')
 
   const isDark = computed(() => colorMode.value === 'dark')
 
@@ -28,13 +28,9 @@ export const useTheme = () => {
   const initTheme = () => {
     if (import.meta.client) {
       const saved = localStorage.getItem('pif-theme') as 'light' | 'dark' | null
-      if (saved) {
-        colorMode.value = saved
-      } else {
-        // Check system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        colorMode.value = prefersDark ? 'dark' : 'light'
-      }
+      // Default to dark; only honour an explicit user choice from a previous visit.
+      // Do not follow OS/browser preference.
+      colorMode.value = saved ?? 'dark'
       applyTheme()
     }
   }

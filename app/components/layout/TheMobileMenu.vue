@@ -133,12 +133,11 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
               <ul class="space-y-1">
                 <li v-for="item in section.items" :key="item.id">
                   <div class="flex items-center">
-                    <component
-                      :is="isExternal(item.url) ? 'a' : resolveComponent('NuxtLink')"
-                      :to="!isExternal(item.url) ? item.url : undefined"
-                      :href="isExternal(item.url) ? item.url : undefined"
+                    <a
+                      v-if="isExternal(item.url)"
+                      :href="item.url"
                       :target="item.target && item.target !== '_self' ? item.target : undefined"
-                      :rel="isExternal(item.url) ? 'noopener noreferrer' : undefined"
+                      rel="noopener noreferrer"
                       class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                       @click="handleNavClick"
                     >
@@ -148,7 +147,20 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                         class="w-5 h-5 text-pif-green dark:text-pif-gold"
                       />
                       <span>{{ item.label }}</span>
-                    </component>
+                    </a>
+                    <NuxtLink
+                      v-else
+                      :to="item.url"
+                      class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                      @click="handleNavClick"
+                    >
+                      <Icon
+                        v-if="item.icon"
+                        :name="item.icon"
+                        class="w-5 h-5 text-pif-green dark:text-pif-gold"
+                      />
+                      <span>{{ item.label }}</span>
+                    </NuxtLink>
                     <button
                       v-if="item.children?.length"
                       class="p-2 text-gray-500 dark:text-gray-400"
@@ -166,17 +178,24 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                     class="ml-6 mt-1 space-y-1 border-l border-gray-200 dark:border-dark-600 pl-3"
                   >
                     <li v-for="child in item.children" :key="child.id">
-                      <component
-                        :is="isExternal(child.url) ? 'a' : resolveComponent('NuxtLink')"
-                        :to="!isExternal(child.url) ? child.url : undefined"
-                        :href="isExternal(child.url) ? child.url : undefined"
+                      <a
+                        v-if="isExternal(child.url)"
+                        :href="child.url"
                         :target="child.target && child.target !== '_self' ? child.target : undefined"
-                        :rel="isExternal(child.url) ? 'noopener noreferrer' : undefined"
+                        rel="noopener noreferrer"
                         class="block px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                         @click="handleNavClick"
                       >
                         {{ child.label }}
-                      </component>
+                      </a>
+                      <NuxtLink
+                        v-else
+                        :to="child.url"
+                        class="block px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                        @click="handleNavClick"
+                      >
+                        {{ child.label }}
+                      </NuxtLink>
                     </li>
                   </ul>
                 </li>

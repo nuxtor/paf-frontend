@@ -69,26 +69,26 @@ const breadcrumbs = computed(() => [
 </script>
 
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-50 dark:bg-pif-black min-h-screen">
     <div class="container py-8">
       <TheBreadcrumb :items="breadcrumbs" />
 
-      <div v-if="!product" class="bg-white rounded-xl shadow-sm p-8 text-center">
-        <p class="text-gray-500">Product not found.</p>
+      <div v-if="!product" class="bg-white dark:bg-dark-200 rounded-xl shadow-sm dark:shadow-black/50 p-8 text-center">
+        <p class="text-gray-500 dark:text-gray-400">Product not found.</p>
       </div>
 
-      <div v-else class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+      <div v-else class="bg-white dark:bg-dark-200 rounded-xl shadow-sm dark:shadow-black/50 p-6 md:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Product Images -->
           <div class="space-y-4">
-            <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+            <div class="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-dark-300 flex items-center justify-center">
               <img
                 v-if="product.images[selectedImage]?.url || product.featured_image"
                 :src="getAssetUrl(product.images[selectedImage]?.url || product.featured_image)"
                 :alt="product.name"
                 class="w-full h-full object-cover"
               />
-              <Icon v-else name="heroicons:photo" class="w-24 h-24 text-gray-300" />
+              <Icon v-else name="heroicons:photo" class="w-24 h-24 text-gray-300 dark:text-gray-600" />
             </div>
 
             <div v-if="product.images.length > 1" class="flex gap-2 flex-wrap">
@@ -119,43 +119,43 @@ const breadcrumbs = computed(() => [
 
             <!-- Title -->
             <div>
-              <p class="text-sm text-pif-green mb-1">{{ product.category?.name }}</p>
-              <h1 class="font-heading text-2xl md:text-3xl text-pif-black">
+              <p class="text-sm text-pif-green dark:text-pif-gold mb-1">{{ product.category?.name }}</p>
+              <h1 class="font-heading text-2xl md:text-3xl text-pif-black dark:text-white">
                 {{ product.name }}
               </h1>
             </div>
 
             <!-- Price -->
             <div class="flex items-baseline gap-3">
-              <span class="text-3xl font-bold text-pif-green-dark">
+              <span class="text-3xl font-bold text-pif-green-dark dark:text-pif-gold">
                 {{ formatCurrency(displayPrice) }}
               </span>
-              <span v-if="hasDiscount" class="text-xl text-gray-400 line-through">
+              <span v-if="hasDiscount" class="text-xl text-gray-400 dark:text-gray-500 line-through">
                 {{ formatCurrency(displayCompareAt!) }}
               </span>
             </div>
 
             <!-- Short Description -->
-            <p class="text-gray-600">{{ product.short_description }}</p>
+            <p class="text-gray-600 dark:text-gray-400">{{ product.short_description }}</p>
 
             <!-- Variant Selector -->
             <div v-if="product.has_variants && product.variants?.length" class="space-y-2">
-              <label class="text-sm font-medium text-gray-700">Select option</label>
+              <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Select option</label>
               <div class="grid grid-cols-1 gap-2">
                 <button
                   v-for="variant in product.variants"
                   :key="variant.id"
                   type="button"
                   :class="[
-                    'flex items-center justify-between px-4 py-3 border rounded-lg text-left transition-colors',
+                    'flex items-center justify-between px-4 py-3 border rounded-lg text-left transition-colors text-pif-black dark:text-white',
                     selectedVariantId === variant.id
-                      ? 'border-pif-green-dark bg-pif-green-dark/5'
-                      : 'border-gray-300 hover:border-pif-green',
+                      ? 'border-pif-green-dark dark:border-pif-gold bg-pif-green-dark/5 dark:bg-pif-gold/10'
+                      : 'border-gray-300 dark:border-dark-600 hover:border-pif-green dark:hover:border-pif-gold',
                   ]"
                   @click="selectedVariantId = variant.id"
                 >
                   <span class="text-sm font-medium">{{ variant.name }}</span>
-                  <span class="text-sm font-semibold text-pif-green-dark">
+                  <span class="text-sm font-semibold text-pif-green-dark dark:text-pif-gold">
                     {{ formatCurrency(variant.price) }}
                   </span>
                 </button>
@@ -170,16 +170,16 @@ const breadcrumbs = computed(() => [
                   product.stock_status === 'in_stock' ? 'bg-green-500' : 'bg-red-500',
                 ]"
               />
-              <span class="text-sm">
+              <span class="text-sm text-gray-700 dark:text-gray-300">
                 {{ product.stock_status === 'in_stock' ? 'In Stock' : 'Out of Stock' }}
               </span>
             </div>
 
             <!-- Quantity & Add to Cart -->
             <div class="flex items-center gap-4">
-              <div class="flex items-center border border-gray-300 rounded-lg">
+              <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded-lg text-pif-black dark:text-white">
                 <button
-                  class="px-3 py-2 hover:bg-gray-100 transition-colors"
+                  class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                   :disabled="quantity <= 1"
                   @click="quantity--"
                 >
@@ -189,10 +189,10 @@ const breadcrumbs = computed(() => [
                   v-model.number="quantity"
                   type="number"
                   min="1"
-                  class="w-16 text-center border-x border-gray-300 py-2 focus:outline-none"
+                  class="w-16 text-center border-x border-gray-300 dark:border-dark-600 bg-transparent py-2 focus:outline-none"
                 />
                 <button
-                  class="px-3 py-2 hover:bg-gray-100 transition-colors"
+                  class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                   @click="quantity++"
                 >
                   <Icon name="heroicons:plus" class="w-4 h-4" />
@@ -212,25 +212,25 @@ const breadcrumbs = computed(() => [
             </div>
 
             <!-- SKU -->
-            <p class="text-xs text-gray-400">SKU: {{ product.sku }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">SKU: {{ product.sku }}</p>
           </div>
         </div>
 
         <!-- Product Description -->
-        <div v-if="product.description" class="mt-12 pt-8 border-t">
-          <h2 class="font-heading text-xl text-pif-black mb-4">Product Description</h2>
-          <div class="prose prose-gray max-w-none" v-html="product.description" />
+        <div v-if="product.description" class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-600">
+          <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Product Description</h2>
+          <div class="prose prose-gray dark:prose-invert max-w-none" v-html="product.description" />
         </div>
 
         <!-- Ingredients & Allergens -->
-        <div v-if="product.ingredients || product.allergens?.length" class="mt-8 pt-8 border-t grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div v-if="product.ingredients || product.allergens?.length" class="mt-8 pt-8 border-t border-gray-200 dark:border-dark-600 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div v-if="product.ingredients">
-            <h3 class="font-heading text-lg text-pif-black mb-2">Ingredients</h3>
-            <p class="text-sm text-gray-600">{{ product.ingredients }}</p>
+            <h3 class="font-heading text-lg text-pif-black dark:text-white mb-2">Ingredients</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ product.ingredients }}</p>
           </div>
           <div v-if="product.allergens?.length">
-            <h3 class="font-heading text-lg text-pif-black mb-2">Allergens</h3>
-            <p class="text-sm text-gray-600">{{ product.allergens.join(', ') }}</p>
+            <h3 class="font-heading text-lg text-pif-black dark:text-white mb-2">Allergens</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ product.allergens.join(', ') }}</p>
           </div>
         </div>
       </div>

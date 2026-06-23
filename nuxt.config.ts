@@ -24,6 +24,15 @@ export default defineNuxtConfig({
     baseURL: '/',
     head: {
       htmlAttrs: { lang: 'en-GB' },
+      script: [
+        {
+          // Apply the theme before first paint to avoid a flash of light.
+          // Default to dark; only an explicit saved choice can switch to light.
+          innerHTML:
+            "(function(){try{var t=localStorage.getItem('pif-theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()",
+          tagPosition: 'head',
+        },
+      ],
       title: 'Premium Abrahimic Foods | Quality Halal Meat & Food Delivery UK',
       meta: [
         { charset: 'utf-8' },

@@ -174,12 +174,11 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
             :key="item.id"
             class="relative group"
           >
-            <component
-              :is="isExternal(item.url) ? 'a' : resolveComponent('NuxtLink')"
-              :to="!isExternal(item.url) ? item.url : undefined"
-              :href="isExternal(item.url) ? item.url : undefined"
+            <a
+              v-if="isExternal(item.url)"
+              :href="item.url"
               :target="item.target && item.target !== '_self' ? item.target : undefined"
-              :rel="isExternal(item.url) ? 'noopener noreferrer' : undefined"
+              rel="noopener noreferrer"
               class="inline-flex items-center gap-1 py-3 text-white text-sm font-medium hover:text-pif-gold transition-colors"
             >
               <Icon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
@@ -189,23 +188,42 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                 name="heroicons:chevron-down"
                 class="w-3 h-3 transition-transform group-hover:rotate-180"
               />
-            </component>
+            </a>
+            <NuxtLink
+              v-else
+              :to="item.url"
+              class="inline-flex items-center gap-1 py-3 text-white text-sm font-medium hover:text-pif-gold transition-colors"
+            >
+              <Icon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
+              {{ item.label }}
+              <Icon
+                v-if="item.children?.length"
+                name="heroicons:chevron-down"
+                class="w-3 h-3 transition-transform group-hover:rotate-180"
+              />
+            </NuxtLink>
             <div
               v-if="item.children?.length"
               class="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
             >
               <ul class="bg-white dark:bg-dark-200 rounded-lg shadow-lg dark:shadow-black/50 py-2 min-w-[180px] border border-transparent dark:border-dark-600">
                 <li v-for="child in item.children" :key="child.id">
-                  <component
-                    :is="isExternal(child.url) ? 'a' : resolveComponent('NuxtLink')"
-                    :to="!isExternal(child.url) ? child.url : undefined"
-                    :href="isExternal(child.url) ? child.url : undefined"
+                  <a
+                    v-if="isExternal(child.url)"
+                    :href="child.url"
                     :target="child.target && child.target !== '_self' ? child.target : undefined"
-                    :rel="isExternal(child.url) ? 'noopener noreferrer' : undefined"
+                    rel="noopener noreferrer"
                     class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
                   >
                     {{ child.label }}
-                  </component>
+                  </a>
+                  <NuxtLink
+                    v-else
+                    :to="child.url"
+                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
+                  >
+                    {{ child.label }}
+                  </NuxtLink>
                 </li>
                 <li v-if="!isExternal(item.url)" class="border-t border-gray-100 dark:border-dark-600 mt-2 pt-2">
                   <NuxtLink
