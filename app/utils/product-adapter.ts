@@ -1,4 +1,10 @@
-import type { Product, Category, ProductImage, ProductVariant } from '~/types/product'
+import type {
+  Product,
+  Category,
+  ProductImage,
+  ProductVariant,
+  ProductOption,
+} from '~/types/product'
 
 interface ApiCategory {
   id: number
@@ -21,6 +27,11 @@ interface ApiProductImage {
   is_primary?: boolean
 }
 
+interface ApiProductOption {
+  name: string
+  values?: string[] | null
+}
+
 interface ApiProductVariant {
   id: number
   name: string
@@ -28,7 +39,9 @@ interface ApiProductVariant {
   price: string | number
   compare_at_price?: string | number | null
   stock_quantity?: number
-  attributes?: Record<string, string> | null
+  stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
+  // Populated variants send an object ({ Size: 'Large' }); empty ones send [].
+  attributes?: Record<string, string> | string[] | null
   is_active?: boolean
 }
 
@@ -52,6 +65,7 @@ interface ApiProduct {
   category?: ApiCategory | null
   primary_image?: ApiProductImage | null
   images?: ApiProductImage[]
+  options?: ApiProductOption[]
   variants?: ApiProductVariant[]
   has_variants?: boolean
   discount_percentage?: number | null
@@ -90,18 +104,36 @@ const adaptImage = (img: ApiProductImage, index = 0): ProductImage => ({
   position: img.position ?? index,
 })
 
-const adaptVariant = (v: ApiProductVariant, productId: number): ProductVariant => ({
-  id: v.id,
-  product_id: productId,
-  name: v.name,
-  sku: v.sku,
-  price: toNum(v.price),
-  compare_at_price: v.compare_at_price != null ? toNum(v.compare_at_price) : undefined,
-  stock_quantity: v.stock_quantity ?? 0,
-  options: v.attributes
-    ? Object.entries(v.attributes).map(([name, value]) => ({ name, value: String(value) }))
-    : [],
+// The API sends variant attributes as an object when populated ({ Size: 'Large' })
+// but as an empty array ([]) when the variant has none — normalise both to a map.
+const adaptAttributes = (
+  attrs: Record<string, string> | string[] | null | undefined
+): Record<string, string> => {
+  if (!attrs || Array.isArray(attrs)) return {}
+  return Object.fromEntries(Object.entries(attrs).map(([name, value]) => [name, String(value)]))
+}
+
+const adaptOption = (o: ApiProductOption): ProductOption => ({
+  name: o.name,
+  values: o.values ?? [],
 })
+
+const adaptVariant = (v: ApiProductVariant, productId: number): ProductVariant => {
+  const attributes = adaptAttributes(v.attributes)
+  return {
+    id: v.id,
+    product_id: productId,
+    name: v.name,
+    sku: v.sku,
+    price: toNum(v.price),
+    compare_at_price: v.compare_at_price != null ? toNum(v.compare_at_price) : undefined,
+    stock_quantity: v.stock_quantity ?? 0,
+    stock_status: v.stock_status,
+    is_active: v.is_active ?? true,
+    attributes,
+    options: Object.entries(attributes).map(([name, value]) => ({ name, value })),
+  }
+}
 
 export const adaptProduct = (p: ApiProduct): Product => {
   const compare = p.compare_at_price != null ? toNum(p.compare_at_price) : undefined
@@ -135,7 +167,10 @@ export const adaptProduct = (p: ApiProduct): Product => {
     ingredients: p.ingredients ?? undefined,
     allergens: p.allergens ? [p.allergens] : undefined,
     has_variants: !!p.has_variants,
-    variants: p.variants?.map(v => adaptVariant(v, p.id)),
+    options: p.options?.map(adaptOption),
+    variants: p.variants
+      ?.map(v => adaptVariant(v, p.id))
+      .filter(v => v.is_active !== false),
     created_at: '',
     updated_at: '',
   }

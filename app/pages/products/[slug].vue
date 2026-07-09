@@ -16,18 +16,53 @@ if (!product.value && !error.value) {
 const selectedImage = ref(0)
 const quantity = ref(1)
 const selectedVariantId = ref<number | null>(null)
+const selectedOptions = ref<Record<string, string>>({})
 const isAdding = ref(false)
 
-// Default to first variant if product has variants
+// Product-level option definitions (e.g. Size: [Small, Large]). When present we
+// render one selector per option and resolve the variant from the chosen values.
+const productOptions = computed(() => product.value?.options ?? [])
+const hasOptions = computed(() => productOptions.value.length > 0)
+
+// Default each option to its first value / fall back to the first variant.
 watchEffect(() => {
-  if (product.value?.has_variants && product.value.variants?.length && !selectedVariantId.value) {
+  if (!product.value?.has_variants) return
+  if (hasOptions.value) {
+    for (const option of productOptions.value) {
+      if (!selectedOptions.value[option.name] && option.values.length) {
+        selectedOptions.value = { ...selectedOptions.value, [option.name]: option.values[0] }
+      }
+    }
+  } else if (product.value.variants?.length && !selectedVariantId.value) {
     selectedVariantId.value = product.value.variants[0].id
   }
 })
 
-const selectedVariant = computed(() =>
-  product.value?.variants?.find(v => v.id === selectedVariantId.value)
-)
+const selectedVariant = computed(() => {
+  const variants = product.value?.variants
+  if (!variants?.length) return undefined
+
+  // No structured options: fall back to the explicitly selected variant.
+  if (!hasOptions.value) {
+    return variants.find(v => v.id === selectedVariantId.value)
+  }
+
+  const selected = selectedOptions.value
+  const selectedKeys = Object.keys(selected).filter(key => selected[key])
+
+  // Prefer a variant whose attributes exactly match the full selection...
+  const exact = variants.find(v => {
+    const keys = Object.keys(v.attributes)
+    return keys.length === selectedKeys.length && keys.every(k => v.attributes[k] === selected[k])
+  })
+  if (exact) return exact
+
+  // ...otherwise the best variant whose every attribute matches a chosen value.
+  return variants.find(v => {
+    const keys = Object.keys(v.attributes)
+    return keys.length > 0 && keys.every(k => v.attributes[k] === selected[k])
+  })
+})
 
 const displayPrice = computed(() => selectedVariant.value?.price ?? product.value?.price ?? 0)
 const displayCompareAt = computed(
@@ -43,11 +78,17 @@ const discountPercentage = computed(() => {
   return Math.round(((displayCompareAt.value - displayPrice.value) / displayCompareAt.value) * 100)
 })
 
+// Stock reflects the chosen variant when available, otherwise the product.
+const effectiveStockStatus = computed(
+  () => selectedVariant.value?.stock_status ?? product.value?.stock_status
+)
+const isInStock = computed(() => effectiveStockStatus.value === 'in_stock')
+
 const handleAddToCart = async () => {
   if (!product.value) return
   isAdding.value = true
   try {
-    await cartStore.addItem(product.value.id, quantity.value, selectedVariantId.value ?? undefined)
+    await cartStore.addItem(product.value.id, quantity.value, selectedVariant.value?.id ?? undefined)
   } finally {
     isAdding.value = false
   }
@@ -86,7 +127,7 @@ const breadcrumbs = computed(() => [
                 v-if="product.images[selectedImage]?.url || product.featured_image"
                 :src="getAssetUrl(product.images[selectedImage]?.url || product.featured_image)"
                 :alt="product.name"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-contain"
               />
               <Icon v-else name="heroicons:photo" class="w-24 h-24 text-gray-300 dark:text-gray-600" />
             </div>
@@ -138,8 +179,36 @@ const breadcrumbs = computed(() => [
             <!-- Short Description -->
             <p class="text-gray-600 dark:text-gray-400">{{ product.short_description }}</p>
 
-            <!-- Variant Selector -->
-            <div v-if="product.has_variants && product.variants?.length" class="space-y-2">
+            <!-- Option-based Variant Selector -->
+            <div v-if="hasOptions" class="space-y-4">
+              <div v-for="option in productOptions" :key="option.name" class="space-y-2">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {{ option.name }}
+                </label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="value in option.values"
+                    :key="value"
+                    type="button"
+                    :class="[
+                      'px-4 py-2 border rounded-lg text-sm font-medium transition-colors text-pif-black dark:text-white',
+                      selectedOptions[option.name] === value
+                        ? 'border-pif-green-dark dark:border-pif-gold bg-pif-green-dark/5 dark:bg-pif-gold/10'
+                        : 'border-gray-300 dark:border-dark-600 hover:border-pif-green dark:hover:border-pif-gold',
+                    ]"
+                    @click="selectedOptions = { ...selectedOptions, [option.name]: value }"
+                  >
+                    {{ value }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fallback: variants without structured options -->
+            <div
+              v-else-if="product.has_variants && product.variants?.length"
+              class="space-y-2"
+            >
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Select option</label>
               <div class="grid grid-cols-1 gap-2">
                 <button
@@ -167,11 +236,11 @@ const breadcrumbs = computed(() => [
               <span
                 :class="[
                   'w-2 h-2 rounded-full',
-                  product.stock_status === 'in_stock' ? 'bg-green-500' : 'bg-red-500',
+                  isInStock ? 'bg-green-500' : 'bg-red-500',
                 ]"
               />
               <span class="text-sm text-gray-700 dark:text-gray-300">
-                {{ product.stock_status === 'in_stock' ? 'In Stock' : 'Out of Stock' }}
+                {{ isInStock ? 'In Stock' : 'Out of Stock' }}
               </span>
             </div>
 
@@ -203,7 +272,7 @@ const breadcrumbs = computed(() => [
                 variant="primary"
                 size="lg"
                 :loading="isAdding"
-                :disabled="product.stock_status !== 'in_stock'"
+                :disabled="!isInStock"
                 class="flex-1"
                 @click="handleAddToCart"
               >

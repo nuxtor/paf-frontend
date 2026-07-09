@@ -152,11 +152,6 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
             The Premium Halal Food
           </p>
         </div>
-        <img
-          src="/images/logo.png"
-          alt="Premium Abrahimic Foods"
-          class="hidden sm:block h-16 md:h-24 w-auto flex-shrink-0"
-        />
       </NuxtLink>
     </div>
 

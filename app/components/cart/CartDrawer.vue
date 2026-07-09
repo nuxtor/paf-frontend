@@ -39,15 +39,15 @@ const handleViewCart = () => {
     <Transition name="slide-right">
       <div
         v-if="uiStore.isCartOpen"
-        class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 flex flex-col shadow-xl"
+        class="fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-dark-200 z-50 flex flex-col shadow-xl"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between p-4 border-b">
-          <h2 class="font-heading text-xl text-pif-black">
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-600">
+          <h2 class="font-heading text-xl text-pif-black dark:text-white">
             Your Cart ({{ cartStore.itemCount }})
           </h2>
           <button
-            class="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
             @click="uiStore.closeCart"
           >
             <Icon name="heroicons:x-mark" class="w-6 h-6" />
@@ -63,10 +63,10 @@ const handleViewCart = () => {
 
           <!-- Empty -->
           <div v-else-if="cartStore.isEmpty" class="text-center py-12">
-            <Icon name="heroicons:shopping-bag" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p class="text-gray-500 mb-4">Your cart is empty</p>
+            <Icon name="heroicons:shopping-bag" class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p class="text-gray-500 dark:text-gray-400 mb-4">Your cart is empty</p>
             <button
-              class="text-sm font-medium text-pif-green-dark hover:underline"
+              class="text-sm font-medium text-pif-green-dark dark:text-pif-gold hover:underline"
               @click="uiStore.closeCart"
             >
               Continue Shopping
@@ -90,33 +90,33 @@ const handleViewCart = () => {
                 />
                 <div
                   v-else
-                  class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center"
+                  class="w-16 h-16 bg-gray-100 dark:bg-dark-300 rounded-lg flex items-center justify-center"
                 >
-                  <Icon name="heroicons:photo" class="w-6 h-6 text-gray-300" />
+                  <Icon name="heroicons:photo" class="w-6 h-6 text-gray-300 dark:text-gray-600" />
                 </div>
               </div>
 
               <!-- Details -->
               <div class="flex-1 min-w-0">
-                <h3 class="text-sm font-medium text-pif-black truncate">{{ item.name }}</h3>
-                <p v-if="item.variant_name" class="text-xs text-gray-500">{{ item.variant_name }}</p>
-                <p class="text-sm font-semibold text-pif-green-dark mt-1">
+                <h3 class="text-sm font-medium text-pif-black dark:text-white truncate">{{ item.name }}</h3>
+                <p v-if="item.variant_name" class="text-xs text-gray-500 dark:text-gray-400">{{ item.variant_name }}</p>
+                <p class="text-sm font-semibold text-pif-green-dark dark:text-pif-gold mt-1">
                   {{ formatCurrency(item.unit_price) }}
                 </p>
 
                 <!-- Quantity controls -->
                 <div class="flex items-center gap-2 mt-2">
-                  <div class="flex items-center border border-gray-300 rounded">
+                  <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded">
                     <button
-                      class="px-1.5 py-0.5 text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      class="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
                       :disabled="item.quantity <= 1 || cartStore.isLoading"
                       @click="cartStore.updateQuantity(item.key, item.quantity - 1)"
                     >
                       <Icon name="heroicons:minus" class="w-3 h-3" />
                     </button>
-                    <span class="px-2 py-0.5 text-xs">{{ item.quantity }}</span>
+                    <span class="px-2 py-0.5 text-xs text-pif-black dark:text-white">{{ item.quantity }}</span>
                     <button
-                      class="px-1.5 py-0.5 text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                      class="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
                       :disabled="cartStore.isLoading"
                       @click="cartStore.updateQuantity(item.key, item.quantity + 1)"
                     >
@@ -134,7 +134,7 @@ const handleViewCart = () => {
               </div>
 
               <!-- Line total -->
-              <div class="text-sm font-medium text-gray-700">
+              <div class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ formatCurrency(item.total) }}
               </div>
             </div>
@@ -142,12 +142,12 @@ const handleViewCart = () => {
         </div>
 
         <!-- Footer -->
-        <div v-if="!cartStore.isEmpty" class="border-t p-4 space-y-3">
-          <div class="flex justify-between font-semibold text-lg">
+        <div v-if="!cartStore.isEmpty" class="border-t border-gray-200 dark:border-dark-600 p-4 space-y-3">
+          <div class="flex justify-between font-semibold text-lg text-pif-black dark:text-white">
             <span>Subtotal</span>
-            <span class="text-pif-green-dark">{{ formatCurrency(cartStore.subtotal) }}</span>
+            <span class="text-pif-green-dark dark:text-pif-gold">{{ formatCurrency(cartStore.subtotal) }}</span>
           </div>
-          <p class="text-xs text-gray-500">Shipping and taxes calculated at checkout</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Shipping and taxes calculated at checkout</p>
           <button
             class="w-full py-3 bg-pif-gold text-pif-black font-medium rounded-lg hover:bg-pif-gold-light transition-colors"
             @click="handleCheckout"
@@ -155,7 +155,7 @@ const handleViewCart = () => {
             Checkout
           </button>
           <button
-            class="w-full py-3 border border-pif-green-dark text-pif-green-dark font-medium rounded-lg hover:bg-pif-green-dark hover:text-white transition-colors"
+            class="w-full py-3 border border-pif-green-dark text-pif-green-dark dark:border-pif-gold dark:text-pif-gold font-medium rounded-lg hover:bg-pif-green-dark hover:text-white dark:hover:bg-pif-gold dark:hover:text-pif-black transition-colors"
             @click="handleViewCart"
           >
             View Cart

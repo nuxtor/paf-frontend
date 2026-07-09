@@ -25,6 +25,7 @@ export interface Product {
   allergens?: string[]
   nutritional_info?: NutritionalInfo
   has_variants: boolean
+  options?: ProductOption[]
   variants?: ProductVariant[]
   meta_title?: string
   meta_description?: string
@@ -42,8 +43,18 @@ export interface ProductVariant {
   weight?: number
   weight_unit?: 'g' | 'kg'
   stock_quantity: number
+  stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
+  is_active?: boolean
+  // Map of option name -> selected value, e.g. { Size: 'Large', Type: 'Hot' }
+  attributes: Record<string, string>
   options: VariantOption[]
   image?: ProductImage
+}
+
+// Product-level option definition, e.g. { name: 'Size', values: ['Small', 'Large'] }
+export interface ProductOption {
+  name: string
+  values: string[]
 }
 
 export interface VariantOption {
