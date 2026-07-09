@@ -26,6 +26,30 @@ export const formatWeight = (weight: number, unit: 'g' | 'kg'): string => {
   return `${weight}${unit}`
 }
 
+// Suffix shown after a price for weight-sold products, e.g. " / kg".
+// Non-weight units (e.g. "each") get no suffix.
+export const unitPriceSuffix = (unit?: string, soldByWeight?: boolean): string => {
+  if (!soldByWeight || !unit || unit === 'each') return ''
+  return ` / ${unit}`
+}
+
+// Full price + unit, e.g. "£12.00 / kg" or "£7.49".
+export const formatUnitPrice = (
+  amount: number,
+  unit?: string,
+  soldByWeight?: boolean
+): string => `${formatCurrency(amount)}${unitPriceSuffix(unit, soldByWeight)}`
+
+// Quantity with its unit for weight products, e.g. "2.5 kg"; plain number otherwise.
+export const formatQuantity = (
+  quantity: number,
+  unit?: string,
+  soldByWeight?: boolean
+): string => {
+  if (soldByWeight && unit && unit !== 'each') return `${quantity} ${unit}`
+  return `${quantity}`
+}
+
 export const slugify = (text: string): string => {
   return text
     .toLowerCase()

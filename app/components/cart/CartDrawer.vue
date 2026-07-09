@@ -22,6 +22,23 @@ const handleViewCart = () => {
   uiStore.closeCart()
   navigateTo('/cart')
 }
+
+// Weight products step by 0.1; everything else by whole units.
+const stepFor = (soldByWeight: boolean) => (soldByWeight ? 0.1 : 1)
+const roundStep = (value: number, step: number) => {
+  const decimals = String(step).includes('.') ? String(step).split('.')[1]!.length : 0
+  const p = 10 ** decimals
+  return Math.round(value * p) / p
+}
+const changeQty = (item: (typeof cartStore.items)[number], delta: number) => {
+  const step = stepFor(item.sold_by_weight)
+  const next = roundStep(Math.max(step, item.quantity + delta * step), step)
+  cartStore.updateQuantity(item.key, next)
+}
+const saveNote = (item: (typeof cartStore.items)[number], event: Event) => {
+  const value = (event.target as HTMLTextAreaElement).value
+  if (value !== (item.note ?? '')) cartStore.updateNote(item.key, value)
+}
 </script>
 
 <template>
@@ -101,7 +118,7 @@ const handleViewCart = () => {
                 <h3 class="text-sm font-medium text-pif-black dark:text-white truncate">{{ item.name }}</h3>
                 <p v-if="item.variant_name" class="text-xs text-gray-500 dark:text-gray-400">{{ item.variant_name }}</p>
                 <p class="text-sm font-semibold text-pif-green-dark dark:text-pif-gold mt-1">
-                  {{ formatCurrency(item.unit_price) }}
+                  {{ formatUnitPrice(item.unit_price, item.unit ?? undefined, item.sold_by_weight) }}
                 </p>
 
                 <!-- Quantity controls -->
@@ -109,16 +126,18 @@ const handleViewCart = () => {
                   <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded">
                     <button
                       class="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
-                      :disabled="item.quantity <= 1 || cartStore.isLoading"
-                      @click="cartStore.updateQuantity(item.key, item.quantity - 1)"
+                      :disabled="item.quantity <= stepFor(item.sold_by_weight) || cartStore.isLoading"
+                      @click="changeQty(item, -1)"
                     >
                       <Icon name="heroicons:minus" class="w-3 h-3" />
                     </button>
-                    <span class="px-2 py-0.5 text-xs text-pif-black dark:text-white">{{ item.quantity }}</span>
+                    <span class="px-2 py-0.5 text-xs text-pif-black dark:text-white whitespace-nowrap">
+                      {{ formatQuantity(item.quantity, item.unit ?? undefined, item.sold_by_weight) }}
+                    </span>
                     <button
                       class="px-1.5 py-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
                       :disabled="cartStore.isLoading"
-                      @click="cartStore.updateQuantity(item.key, item.quantity + 1)"
+                      @click="changeQty(item, 1)"
                     >
                       <Icon name="heroicons:plus" class="w-3 h-3" />
                     </button>
@@ -131,6 +150,16 @@ const handleViewCart = () => {
                     <Icon name="heroicons:trash" class="w-4 h-4" />
                   </button>
                 </div>
+
+                <!-- Per-item note -->
+                <textarea
+                  :value="item.note ?? ''"
+                  rows="2"
+                  maxlength="500"
+                  placeholder="Add a note (optional)"
+                  class="mt-2 w-full rounded border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-pif-green dark:focus:ring-pif-gold"
+                  @change="saveNote(item, $event)"
+                />
               </div>
 
               <!-- Line total -->

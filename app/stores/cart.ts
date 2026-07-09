@@ -15,9 +15,8 @@ export const useCartStore = defineStore('cart', () => {
   const isFetchingRates = ref(false)
 
   // Getters
-  const itemCount = computed(() =>
-    items.value.reduce((sum: number, item: ApiCartItem) => sum + item.quantity, 0)
-  )
+  // Backend counts distinct lines (not summed quantity) — mirror that here.
+  const itemCount = computed(() => items.value.length)
 
   const subtotal = computed(() =>
     items.value.reduce((sum: number, item: ApiCartItem) => sum + item.total, 0)
@@ -58,7 +57,12 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  const addItem = async (productId: number, quantity: number, variantId?: number) => {
+  const addItem = async (
+    productId: number,
+    quantity: number,
+    variantId?: number,
+    note?: string
+  ) => {
     const { apiFetch } = useApi()
     isLoading.value = true
     try {
@@ -68,6 +72,7 @@ export const useCartStore = defineStore('cart', () => {
           product_id: productId,
           quantity,
           variant_id: variantId ?? null,
+          ...(note !== undefined ? { note } : {}),
         },
       })
       syncFromApi(response.cart)
@@ -85,23 +90,33 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  const updateQuantity = async (itemKey: string, quantity: number) => {
+  // PUT accepts quantity and/or note. Omit a field to leave it unchanged;
+  // pass an empty-string note to clear it.
+  const updateItem = async (
+    itemKey: string,
+    payload: { quantity?: number; note?: string }
+  ) => {
     const { apiFetch } = useApi()
     isLoading.value = true
     try {
       const response = await apiFetch<{ cart: ApiCart }>(`/cart/items/${itemKey}`, {
         method: 'PUT',
-        body: { quantity },
+        body: payload,
       })
       syncFromApi(response.cart)
     } catch (error: any) {
       const uiStore = useUiStore()
-      uiStore.addToast('error', error?.data?.message || 'Failed to update quantity')
+      uiStore.addToast('error', error?.data?.message || 'Failed to update item')
       throw error
     } finally {
       isLoading.value = false
     }
   }
+
+  const updateQuantity = (itemKey: string, quantity: number) =>
+    updateItem(itemKey, { quantity })
+
+  const updateNote = (itemKey: string, note: string) => updateItem(itemKey, { note })
 
   const removeItem = async (itemKey: string) => {
     const { apiFetch } = useApi()
@@ -218,7 +233,9 @@ export const useCartStore = defineStore('cart', () => {
     // Actions
     fetchCart,
     addItem,
+    updateItem,
     updateQuantity,
+    updateNote,
     removeItem,
     clearCart,
     applyCoupon,

@@ -12,8 +12,11 @@ interface OrderListItem {
   total: string | number
   currency: string
   created_at: string
-  items?: Array<{ name: string; quantity: number }>
+  items?: Array<{ name: string; quantity: number; unit?: string | null; note?: string | null }>
 }
+
+const formatOrderQty = (item: { quantity: number; unit?: string | null }) =>
+  item.unit && item.unit !== 'each' ? `${item.quantity} ${item.unit}` : `${item.quantity}`
 
 const { apiFetch } = useApi()
 
@@ -108,10 +111,11 @@ useSeoMeta({
           </div>
         </div>
 
-        <div v-if="order.items?.length" class="border-t pt-4 text-sm text-gray-600">
-          <p class="line-clamp-1">
-            {{ order.items.map(i => `${i.quantity}× ${i.name}`).join(', ') }}
-          </p>
+        <div v-if="order.items?.length" class="border-t pt-4 text-sm text-gray-600 space-y-1">
+          <div v-for="(i, idx) in order.items" :key="idx">
+            <p>{{ formatOrderQty(i) }} × {{ i.name }}</p>
+            <p v-if="i.note" class="text-xs text-gray-500 italic">Note: {{ i.note }}</p>
+          </div>
         </div>
       </div>
     </div>

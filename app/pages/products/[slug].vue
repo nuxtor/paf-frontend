@@ -78,11 +78,28 @@ const discountPercentage = computed(() => {
   return Math.round(((displayCompareAt.value - displayPrice.value) / displayCompareAt.value) * 100)
 })
 
-// Stock reflects the chosen variant when available, otherwise the product.
-const effectiveStockStatus = computed(
-  () => selectedVariant.value?.stock_status ?? product.value?.stock_status
-)
-const isInStock = computed(() => effectiveStockStatus.value === 'in_stock')
+// Quantity behaviour depends on whether the product is sold by weight.
+const isWeight = computed(() => !!product.value?.sold_by_weight)
+const qtyStep = computed(() => product.value?.quantity_step || (isWeight.value ? 0.1 : 1))
+const minQty = computed(() => (isWeight.value ? qtyStep.value : 1))
+const qtyDecimals = computed(() => {
+  const s = String(qtyStep.value)
+  return s.includes('.') ? s.split('.')[1]!.length : 0
+})
+const roundQty = (v: number) => {
+  const p = 10 ** qtyDecimals.value
+  return Math.round(v * p) / p
+}
+const incrementQty = () => {
+  quantity.value = roundQty(quantity.value + qtyStep.value)
+}
+const decrementQty = () => {
+  quantity.value = roundQty(Math.max(minQty.value, quantity.value - qtyStep.value))
+}
+const normalizeQty = () => {
+  const v = Number(quantity.value)
+  quantity.value = !v || v < minQty.value ? minQty.value : roundQty(v)
+}
 
 const handleAddToCart = async () => {
   if (!product.value) return
@@ -170,6 +187,9 @@ const breadcrumbs = computed(() => [
             <div class="flex items-baseline gap-3">
               <span class="text-3xl font-bold text-pif-green-dark dark:text-pif-gold">
                 {{ formatCurrency(displayPrice) }}
+                <small v-if="isWeight && product.unit" class="text-lg font-normal text-gray-500 dark:text-gray-400">
+                  / {{ product.unit }}
+                </small>
               </span>
               <span v-if="hasDiscount" class="text-xl text-gray-400 dark:text-gray-500 line-through">
                 {{ formatCurrency(displayCompareAt!) }}
@@ -233,46 +253,44 @@ const breadcrumbs = computed(() => [
 
             <!-- Stock Status -->
             <div class="flex items-center gap-2">
-              <span
-                :class="[
-                  'w-2 h-2 rounded-full',
-                  isInStock ? 'bg-green-500' : 'bg-red-500',
-                ]"
-              />
-              <span class="text-sm text-gray-700 dark:text-gray-300">
-                {{ isInStock ? 'In Stock' : 'Out of Stock' }}
-              </span>
+              <span class="w-2 h-2 rounded-full bg-green-500" />
+              <span class="text-sm text-gray-700 dark:text-gray-300">In Stock</span>
             </div>
 
             <!-- Quantity & Add to Cart -->
             <div class="flex items-center gap-4">
               <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded-lg text-pif-black dark:text-white">
                 <button
-                  class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
-                  :disabled="quantity <= 1"
-                  @click="quantity--"
+                  class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
+                  :disabled="quantity <= minQty"
+                  @click="decrementQty"
                 >
                   <Icon name="heroicons:minus" class="w-4 h-4" />
                 </button>
                 <input
                   v-model.number="quantity"
                   type="number"
-                  min="1"
-                  class="w-16 text-center border-x border-gray-300 dark:border-dark-600 bg-transparent py-2 focus:outline-none"
+                  :min="minQty"
+                  :step="qtyStep"
+                  class="w-20 text-center border-x border-gray-300 dark:border-dark-600 bg-transparent py-2 focus:outline-none"
+                  @change="normalizeQty"
                 />
                 <button
                   class="px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
-                  @click="quantity++"
+                  @click="incrementQty"
                 >
                   <Icon name="heroicons:plus" class="w-4 h-4" />
                 </button>
               </div>
 
+              <span v-if="isWeight && product.unit_label" class="text-sm text-gray-500 dark:text-gray-400">
+                {{ product.unit_label }}
+              </span>
+
               <PButton
                 variant="primary"
                 size="lg"
                 :loading="isAdding"
-                :disabled="!isInStock"
                 class="flex-1"
                 @click="handleAddToCart"
               >

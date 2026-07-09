@@ -15,7 +15,9 @@ const handleQuickAdd = async () => {
   isAdding.value = false
 }
 
-const formattedPrice = computed(() => formatCurrency(props.product.price))
+const formattedPrice = computed(() =>
+  formatUnitPrice(props.product.price, props.product.unit, props.product.sold_by_weight)
+)
 
 const hasDiscount = computed(
   () =>

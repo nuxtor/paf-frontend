@@ -25,6 +25,23 @@ const handleApplyCoupon = async () => {
   }
 }
 
+// Weight products step by 0.1; everything else by whole units.
+const stepFor = (soldByWeight: boolean) => (soldByWeight ? 0.1 : 1)
+const roundStep = (value: number, step: number) => {
+  const decimals = String(step).includes('.') ? String(step).split('.')[1]!.length : 0
+  const p = 10 ** decimals
+  return Math.round(value * p) / p
+}
+const changeQty = (item: (typeof cartStore.items)[number], delta: number) => {
+  const step = stepFor(item.sold_by_weight)
+  const next = roundStep(Math.max(step, item.quantity + delta * step), step)
+  cartStore.updateQuantity(item.key, next)
+}
+const saveNote = (item: (typeof cartStore.items)[number], event: Event) => {
+  const value = (event.target as HTMLTextAreaElement).value
+  if (value !== (item.note ?? '')) cartStore.updateNote(item.key, value)
+}
+
 onMounted(() => {
   cartStore.fetchCart()
 })
@@ -92,8 +109,18 @@ onMounted(() => {
               <p v-if="item.variant_name" class="text-sm text-gray-500 dark:text-gray-400">{{ item.variant_name }}</p>
               <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">SKU: {{ item.sku }}</p>
               <p class="font-semibold text-pif-green-dark dark:text-pif-gold mt-1">
-                {{ formatCurrency(item.unit_price) }}
+                {{ formatUnitPrice(item.unit_price, item.unit ?? undefined, item.sold_by_weight) }}
               </p>
+
+              <!-- Per-item note -->
+              <textarea
+                :value="item.note ?? ''"
+                rows="2"
+                maxlength="500"
+                placeholder="Add a note for this item (optional)"
+                class="mt-3 w-full rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pif-green dark:focus:ring-pif-gold focus:border-pif-green dark:focus:border-pif-gold"
+                @change="saveNote(item, $event)"
+              />
             </div>
 
             <!-- Quantity & Remove -->
@@ -109,16 +136,18 @@ onMounted(() => {
               <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded-lg">
                 <button
                   class="px-2 py-1 text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
-                  :disabled="item.quantity <= 1 || cartStore.isLoading"
-                  @click="cartStore.updateQuantity(item.key, item.quantity - 1)"
+                  :disabled="item.quantity <= stepFor(item.sold_by_weight) || cartStore.isLoading"
+                  @click="changeQty(item, -1)"
                 >
                   <Icon name="heroicons:minus" class="w-4 h-4" />
                 </button>
-                <span class="px-3 py-1 text-sm text-pif-black dark:text-white">{{ item.quantity }}</span>
+                <span class="px-3 py-1 text-sm text-pif-black dark:text-white whitespace-nowrap">
+                  {{ formatQuantity(item.quantity, item.unit ?? undefined, item.sold_by_weight) }}
+                </span>
                 <button
                   class="px-2 py-1 text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
                   :disabled="cartStore.isLoading"
-                  @click="cartStore.updateQuantity(item.key, item.quantity + 1)"
+                  @click="changeQty(item, 1)"
                 >
                   <Icon name="heroicons:plus" class="w-4 h-4" />
                 </button>

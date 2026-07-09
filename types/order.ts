@@ -34,6 +34,8 @@ export interface OrderItem {
   name: string
   sku: string
   quantity: number
+  unit?: string
+  note?: string
   price: number
   line_total: number
 }

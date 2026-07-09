@@ -38,7 +38,6 @@ interface ApiProductVariant {
   sku: string
   price: string | number
   compare_at_price?: string | number | null
-  stock_quantity?: number
   stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
   // Populated variants send an object ({ Size: 'Large' }); empty ones send [].
   attributes?: Record<string, string> | string[] | null
@@ -55,6 +54,9 @@ interface ApiProduct {
   price: string | number
   compare_at_price?: string | number | null
   unit?: string
+  unit_label?: string
+  sold_by_weight?: boolean
+  quantity_step?: string | number | null
   stock_status: 'in_stock' | 'low_stock' | 'out_of_stock'
   is_featured?: boolean
   halal_certification?: string | null
@@ -127,7 +129,6 @@ const adaptVariant = (v: ApiProductVariant, productId: number): ProductVariant =
     sku: v.sku,
     price: toNum(v.price),
     compare_at_price: v.compare_at_price != null ? toNum(v.compare_at_price) : undefined,
-    stock_quantity: v.stock_quantity ?? 0,
     stock_status: v.stock_status,
     is_active: v.is_active ?? true,
     attributes,
@@ -152,6 +153,10 @@ export const adaptProduct = (p: ApiProduct): Product => {
     description: p.description,
     price: toNum(p.price),
     compare_at_price: compare,
+    unit: p.unit ?? undefined,
+    unit_label: p.unit_label ?? undefined,
+    sold_by_weight: !!p.sold_by_weight,
+    quantity_step: p.quantity_step != null ? toNum(p.quantity_step) : undefined,
     featured_image: p.primary_image
       ? buildImageUrl(p.primary_image.url || p.primary_image.path || '')
       : images[0]?.url ?? '',

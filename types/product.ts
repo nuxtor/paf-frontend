@@ -8,6 +8,10 @@ export interface Product {
   price: number
   compare_at_price?: number
   cost_price?: number
+  unit?: string
+  unit_label?: string
+  sold_by_weight?: boolean
+  quantity_step?: number
   featured_image: string
   images: ProductImage[]
   category?: Category
@@ -42,7 +46,6 @@ export interface ProductVariant {
   compare_at_price?: number
   weight?: number
   weight_unit?: 'g' | 'kg'
-  stock_quantity: number
   stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
   is_active?: boolean
   // Map of option name -> selected value, e.g. { Size: 'Large', Type: 'Hot' }

@@ -7,9 +7,14 @@ export interface ApiCartItem {
   variant_id: number | null
   name: string
   variant_name: string | null
+  options: Record<string, string> | null
   sku: string
   image: string | null
   quantity: number
+  unit: string | null
+  unit_label: string | null
+  sold_by_weight: boolean
+  note: string | null
   unit_price: number
   total: number
 }
