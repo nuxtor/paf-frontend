@@ -107,7 +107,7 @@ const breadcrumbs = computed(() => [
         <article
           v-for="product in productsStore.products"
           :key="product.id"
-          class="group relative bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-shadow border border-transparent dark:border-dark-600"
+          class="group relative bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-shadow border-[3px] border-pif-green-dark"
         >
           <NuxtLink
             :to="`/products/${product.slug}`"

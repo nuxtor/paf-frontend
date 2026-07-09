@@ -25,7 +25,7 @@ const hasDiscount = computed(
 
 <template>
   <article
-    class="group relative bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-shadow duration-300 border border-transparent dark:border-dark-600"
+    class="group relative bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-shadow duration-300 border-[3px] border-pif-green-dark"
   >
     <!-- Image -->
     <NuxtLink
