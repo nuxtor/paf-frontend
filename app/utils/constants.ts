@@ -18,7 +18,7 @@ export const PAYMENT_STATUSES: Record<string, { label: string; color: string }> 
 
 export const MAX_CART_QUANTITY = 99
 export const MIN_WHOLESALE_ORDER = 150
-export const FREE_DELIVERY_THRESHOLD = 50
+export const FREE_DELIVERY_THRESHOLD = 100
 
 export const ALLERGENS = [
   'Celery',

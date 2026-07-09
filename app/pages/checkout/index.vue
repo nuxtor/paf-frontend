@@ -168,7 +168,7 @@ const handleSubmit = async () => {
         phone: form.phone || undefined,
         shipping_address: form.shipping,
         billing_address: billingAddress,
-        shipping_rate_id: cartStore.selectedShippingRate!.id,
+        shipping_method_id: cartStore.selectedShippingRate!.id,
         notes: form.notes || undefined,
       },
     })
@@ -425,7 +425,7 @@ onMounted(async () => {
                 <p v-if="rate.description" class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ rate.description }}</p>
               </div>
               <span class="font-medium text-pif-black dark:text-white">
-                {{ rate.free_shipping ? 'Free' : formatCurrency(rate.rate) }}
+                {{ rate.free_shipping ? 'FREE' : formatCurrency(rate.rate) }}
               </span>
             </label>
           </div>
@@ -514,7 +514,7 @@ onMounted(async () => {
               <span class="text-gray-600 dark:text-gray-400">Shipping</span>
               <span class="font-medium text-pif-black dark:text-white">
                 {{ cartStore.selectedShippingRate
-                  ? (cartStore.selectedShippingRate.free_shipping ? 'Free' : formatCurrency(cartStore.shippingTotal))
+                  ? (cartStore.selectedShippingRate.free_shipping ? 'FREE' : formatCurrency(cartStore.shippingTotal))
                   : 'Not selected' }}
               </span>
             </div>
@@ -526,6 +526,10 @@ onMounted(async () => {
               <Icon name="heroicons:tag" class="w-3 h-3" />
               <span>{{ cartStore.couponCode }}</span>
             </div>
+          </div>
+
+          <div class="mt-4">
+            <CartFreeDeliveryProgress :subtotal="cartStore.subtotal" />
           </div>
 
           <div class="border-t border-gray-200 dark:border-dark-600 my-4 pt-4">

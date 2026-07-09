@@ -58,7 +58,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
       <div class="container">
         <div class="flex items-center justify-between">
           <p class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">
-            Nationwide Delivery | Free Delivery On Orders Over £50
+            Nationwide Delivery | Free Delivery On Orders Over £100
           </p>
 
           <div class="hidden md:flex items-center gap-4">

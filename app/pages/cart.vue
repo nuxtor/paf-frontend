@@ -182,6 +182,11 @@ onMounted(() => {
               </div>
             </div>
 
+            <!-- Free delivery progress -->
+            <div class="mt-4">
+              <CartFreeDeliveryProgress :subtotal="cartStore.subtotal" />
+            </div>
+
             <!-- Coupon Code -->
             <div class="border-t border-gray-200 dark:border-dark-600 my-4 pt-4">
               <div v-if="cartStore.couponCode" class="flex items-center justify-between bg-green-50 dark:bg-green-900/20 rounded-lg p-3">

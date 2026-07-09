@@ -36,7 +36,7 @@ const fallbackSlides: CmsHeroSlide[] = [
   {
     id: -4,
     heading: 'Free Delivery',
-    subheading: 'On orders over £50',
+    subheading: 'On orders over £100',
     image: getAssetUrl('images/meat-slides-04.jpg'),
     cta_label: 'Start Shopping',
     cta_url: '/products',
