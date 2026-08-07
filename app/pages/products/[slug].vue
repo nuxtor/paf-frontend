@@ -17,6 +17,7 @@ const selectedImage = ref(0)
 const quantity = ref(1)
 const selectedVariantId = ref<number | null>(null)
 const selectedOptions = ref<Record<string, string>>({})
+const note = ref('')
 const isAdding = ref(false)
 
 // Product-level option definitions (e.g. Size: [Small, Large]). When present we
@@ -80,6 +81,25 @@ const discountPercentage = computed(() => {
 
 // Quantity behaviour depends on whether the product is sold by weight.
 const isWeight = computed(() => !!product.value?.sold_by_weight)
+
+// Unit annotation for the price/quantity. A selected variant is a fixed pack,
+// so it carries its own label (e.g. "500g") and the product-level per-weight
+// unit ("kg" / "Per Kilogram") must not be appended. Only the no-variant,
+// sold-by-weight case shows the product-level unit.
+const priceUnit = computed(() =>
+  selectedVariant.value
+    ? selectedVariant.value.unit_label
+    : isWeight.value
+      ? product.value?.unit
+      : undefined
+)
+const quantityUnitLabel = computed(() =>
+  selectedVariant.value
+    ? selectedVariant.value.unit_label
+    : isWeight.value
+      ? product.value?.unit_label
+      : undefined
+)
 const qtyStep = computed(() => product.value?.quantity_step || (isWeight.value ? 0.1 : 1))
 const minQty = computed(() => (isWeight.value ? qtyStep.value : 1))
 const qtyDecimals = computed(() => {
@@ -105,7 +125,15 @@ const handleAddToCart = async () => {
   if (!product.value) return
   isAdding.value = true
   try {
-    await cartStore.addItem(product.value.id, quantity.value, selectedVariant.value?.id ?? undefined)
+    // Omit the note entirely when blank so a re-add doesn't wipe an existing one.
+    const trimmedNote = note.value.trim()
+    await cartStore.addItem(
+      product.value.id,
+      quantity.value,
+      selectedVariant.value?.id ?? undefined,
+      trimmedNote || undefined
+    )
+    note.value = ''
   } finally {
     isAdding.value = false
   }
@@ -187,8 +215,8 @@ const breadcrumbs = computed(() => [
             <div class="flex items-baseline gap-3">
               <span class="text-3xl font-bold text-pif-green-dark dark:text-pif-gold">
                 {{ formatCurrency(displayPrice) }}
-                <small v-if="isWeight && product.unit" class="text-lg font-normal text-gray-500 dark:text-gray-400">
-                  / {{ product.unit }}
+                <small v-if="priceUnit" class="text-lg font-normal text-gray-500 dark:text-gray-400">
+                  / {{ priceUnit }}
                 </small>
               </span>
               <span v-if="hasDiscount" class="text-xl text-gray-400 dark:text-gray-500 line-through">
@@ -257,6 +285,27 @@ const breadcrumbs = computed(() => [
               <span class="text-sm text-gray-700 dark:text-gray-300">In Stock</span>
             </div>
 
+            <!-- Per-item note -->
+            <div>
+              <label
+                for="product-note"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
+                Preparation note <span class="text-gray-400 dark:text-gray-500">(optional)</span>
+              </label>
+              <textarea
+                id="product-note"
+                v-model="note"
+                rows="2"
+                maxlength="500"
+                placeholder="e.g. no bones, cut into small pieces"
+                class="w-full rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pif-green dark:focus:ring-pif-gold"
+              />
+              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                We'll pass this to our butchers when packing your order.
+              </p>
+            </div>
+
             <!-- Quantity & Add to Cart -->
             <div class="flex items-center gap-4">
               <div class="flex items-center border border-gray-300 dark:border-dark-600 rounded-lg text-pif-black dark:text-white">
@@ -283,8 +332,8 @@ const breadcrumbs = computed(() => [
                 </button>
               </div>
 
-              <span v-if="isWeight && product.unit_label" class="text-sm text-gray-500 dark:text-gray-400">
-                {{ product.unit_label }}
+              <span v-if="quantityUnitLabel" class="text-sm text-gray-500 dark:text-gray-400">
+                {{ quantityUnitLabel }}
               </span>
 
               <PButton
@@ -300,6 +349,9 @@ const breadcrumbs = computed(() => [
 
             <!-- SKU -->
             <p class="text-xs text-gray-400 dark:text-gray-500">SKU: {{ product.sku }}</p>
+
+            <!-- Quality assurances -->
+            <ProductAssurances class="pt-4 border-t border-gray-200 dark:border-dark-600" />
           </div>
         </div>
 

@@ -8,7 +8,7 @@ definePageMeta({
 
 const cartStore = useCartStore()
 const uiStore = useUiStore()
-const { apiFetch } = useApi()
+const { apiFetch, getCartSessionId } = useApi()
 const { getAssetUrl } = useAsset()
 const { isDark } = useTheme()
 const { $stripe } = useNuxtApp() as { $stripe: Stripe | null }
@@ -51,22 +51,24 @@ const form = reactive({
 })
 
 // Validation schema
+const addressSchema = z.object({
+  first_name: z.string().min(1, 'First name is required'),
+  last_name: z.string().min(1, 'Last name is required'),
+  address_line_1: z.string().min(1, 'Address is required'),
+  address_line_2: z.string().optional(),
+  city: z.string().min(1, 'City is required'),
+  county: z.string().optional(),
+  postcode: z.string().min(1, 'Postcode is required').regex(
+    /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i,
+    'Please enter a valid UK postcode'
+  ),
+  country: z.string().default('GB'),
+})
+
 const checkoutSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
   phone: z.string().optional(),
-  shipping: z.object({
-    first_name: z.string().min(1, 'First name is required'),
-    last_name: z.string().min(1, 'Last name is required'),
-    address_line_1: z.string().min(1, 'Address is required'),
-    address_line_2: z.string().optional(),
-    city: z.string().min(1, 'City is required'),
-    county: z.string().optional(),
-    postcode: z.string().min(1, 'Postcode is required').regex(
-      /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i,
-      'Please enter a valid UK postcode'
-    ),
-    country: z.string().default('GB'),
-  }),
+  shipping: addressSchema,
 })
 
 const errors = ref<Record<string, string>>({})
@@ -103,7 +105,7 @@ const initStripeElements = (clientSecret: string) => {
     appearance: {
       theme: isDark.value ? 'night' : 'stripe',
       variables: {
-        colorPrimary: isDark.value ? '#D4A437' : '#1B4332',
+        colorPrimary: isDark.value ? '#D4A437' : '#3da052',
         fontFamily: 'Inter, sans-serif',
         borderRadius: '8px',
       },
@@ -119,24 +121,58 @@ const initStripeElements = (clientSecret: string) => {
 }
 
 // Validate form
+const collectIssues = (error: z.ZodError, prefix = '') => {
+  for (const issue of error.issues) {
+    const path = [prefix, ...issue.path].filter(Boolean).join('.')
+    // Keep the first message per field — it's the most specific.
+    if (!errors.value[path]) errors.value[path] = issue.message
+  }
+}
+
 const validateForm = (): boolean => {
   errors.value = {}
 
   const result = checkoutSchema.safeParse(form)
-  if (!result.success) {
-    for (const issue of result.error.issues) {
-      const path = issue.path.join('.')
-      errors.value[path] = issue.message
-    }
-    return false
+  if (!result.success) collectIssues(result.error)
+
+  // Billing is only filled in when it differs from shipping.
+  if (!form.billing_same_as_shipping) {
+    const billingResult = addressSchema.safeParse(form.billing)
+    if (!billingResult.success) collectIssues(billingResult.error, 'billing')
   }
 
   if (!cartStore.selectedShippingRate) {
     errors.value['shipping_method'] = 'Please select a shipping method'
-    return false
   }
 
-  return true
+  return Object.keys(errors.value).length === 0
+}
+
+// Map Laravel validation paths onto this form's field keys so they render inline.
+const applyApiErrors = (apiErrors: Record<string, string[]>): string[] => {
+  const unmapped: string[] = []
+
+  for (const [field, messages] of Object.entries(apiErrors)) {
+    const message = messages?.[0]
+    if (!message) continue
+
+    let path = field
+      .replace(/^shipping_address/, 'shipping')
+      // With "same as shipping" ticked, a billing complaint is really about shipping.
+      .replace(/^billing_address/, form.billing_same_as_shipping ? 'shipping' : 'billing')
+      .replace(/^shipping_method_id$/, 'shipping_method')
+
+    if (path === 'notes') path = 'order_notes'
+
+    // Only surface paths that correspond to a rendered field.
+    if (/^(email|phone|order_notes|shipping_method|(shipping|billing)\.\w+)$/.test(path)) {
+      if (!errors.value[path]) errors.value[path] = message
+    } else {
+      unmapped.push(message)
+    }
+  }
+
+  return unmapped
 }
 
 // Get field error
@@ -164,8 +200,16 @@ const handleSubmit = async () => {
     const response = await apiFetch<{ order: any; client_secret: string }>('/checkout', {
       method: 'POST',
       body: {
+        // Guest checkout is keyed by the same session id the cart uses.
+        session_id: getCartSessionId(),
         email: form.email,
         phone: form.phone || undefined,
+        items: cartStore.items.map((item) => ({
+          product_id: item.product_id,
+          variant_id: item.variant_id ?? undefined,
+          quantity: item.quantity,
+          note: item.note || undefined,
+        })),
         shipping_address: form.shipping,
         billing_address: billingAddress,
         shipping_method_id: cartStore.selectedShippingRate!.id,
@@ -221,8 +265,19 @@ const handleSubmit = async () => {
     }
     // If successful, Stripe redirects to the return_url
   } catch (error: any) {
-    const message = error?.data?.message || 'Something went wrong. Please try again.'
-    uiStore.addToast('error', message)
+    const apiErrors = error?.data?.errors as Record<string, string[]> | undefined
+
+    const status = error?.statusCode ?? error?.response?.status
+
+    if (status === 422 && apiErrors) {
+      const unmapped = applyApiErrors(apiErrors)
+      uiStore.addToast(
+        'error',
+        unmapped[0] || 'Please fix the highlighted fields and try again.'
+      )
+    } else {
+      uiStore.addToast('error', error?.data?.message || 'Something went wrong. Please try again.')
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -343,12 +398,14 @@ onMounted(async () => {
               label="First Name"
               placeholder="John"
               required
+              :error="getError('billing.first_name')"
             />
             <PInput
               v-model="form.billing.last_name"
               label="Last Name"
               placeholder="Doe"
               required
+              :error="getError('billing.last_name')"
             />
             <div class="md:col-span-2">
               <PInput
@@ -356,6 +413,7 @@ onMounted(async () => {
                 label="Address Line 1"
                 placeholder="123 Main Street"
                 required
+                :error="getError('billing.address_line_1')"
               />
             </div>
             <div class="md:col-span-2">
@@ -370,6 +428,7 @@ onMounted(async () => {
               label="City"
               placeholder="London"
               required
+              :error="getError('billing.city')"
             />
             <PInput
               v-model="form.billing.county"
@@ -381,6 +440,7 @@ onMounted(async () => {
               label="Postcode"
               placeholder="SW1A 1AA"
               required
+              :error="getError('billing.postcode')"
             />
           </div>
         </PCard>
@@ -465,6 +525,9 @@ onMounted(async () => {
             placeholder="Any special instructions for your order..."
             class="w-full rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pif-green dark:focus:ring-pif-gold focus:border-pif-green dark:focus:border-pif-gold"
           />
+          <p v-if="getError('order_notes')" class="text-sm text-red-500 dark:text-red-400 mt-2">
+            {{ getError('order_notes') }}
+          </p>
         </PCard>
       </div>
 
