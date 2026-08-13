@@ -190,6 +190,15 @@ const breadcrumbs = computed(() => [
                 <img :src="getAssetUrl(image.url)" :alt="image.alt" class="w-full h-full object-cover" />
               </button>
             </div>
+
+            <!-- Preparation weight-loss notice -->
+            <p
+              class="rounded-lg bg-pif-cream dark:bg-dark-300 border border-gray-200 dark:border-dark-600 px-4 py-3 text-sm text-gray-600 dark:text-gray-400"
+            >
+              <span class="font-medium text-pif-black dark:text-white">Please note:</span>
+              The final meat weight will be lower after cleaning, de-fatting, trimming and cutting.
+              All preparation is carried out free of charge.
+            </p>
           </div>
 
           <!-- Product Info -->
