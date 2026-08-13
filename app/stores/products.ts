@@ -42,6 +42,7 @@ export const useProductsStore = defineStore('products', () => {
   const flatCategories = ref<Category[]>([])
   const currentProduct = ref<Product | null>(null)
   const isLoading = ref(false)
+  const isLoadingMore = ref(false)
   const pagination = ref({
     currentPage: 1,
     lastPage: 1,
@@ -59,14 +60,19 @@ export const useProductsStore = defineStore('products', () => {
   )
 
   // Actions
-  const fetchProducts = async (filters?: ProductFilters) => {
+  const fetchProducts = async (filters?: ProductFilters, append = false) => {
     const { apiFetch } = useApi()
-    isLoading.value = true
+    if (append) {
+      isLoadingMore.value = true
+    } else {
+      isLoading.value = true
+    }
     try {
       const response = await apiFetch<PaginatedProductsResponse>('/shop/products', {
         query: filters as Record<string, any>,
       })
-      products.value = adaptProducts(response.data)
+      const adapted = adaptProducts(response.data)
+      products.value = append ? [...products.value, ...adapted] : adapted
       if (response.meta) {
         pagination.value = {
           currentPage: response.meta.current_page,
@@ -77,9 +83,10 @@ export const useProductsStore = defineStore('products', () => {
       }
     } catch (error) {
       console.error('Failed to fetch products', error)
-      products.value = []
+      if (!append) products.value = []
     } finally {
       isLoading.value = false
+      isLoadingMore.value = false
     }
   }
 
@@ -171,6 +178,7 @@ export const useProductsStore = defineStore('products', () => {
     flatCategories,
     currentProduct,
     isLoading,
+    isLoadingMore,
     pagination,
     // Getters
     productsByCategory,

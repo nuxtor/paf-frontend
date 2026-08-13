@@ -15,7 +15,7 @@ const subcategories = computed(() => mainCategory.value?.children || [])
 const filters = ref({
   category: slug,
   sort: (route.query.sort as string) || 'newest',
-  page: Number(route.query.page) || 1,
+  page: 1,
 })
 
 useSeoMeta({
@@ -23,9 +23,51 @@ useSeoMeta({
   description: () => category.value?.description || 'Browse our premium halal products.',
 })
 
+const hasMore = computed(
+  () => productsStore.pagination.currentPage < productsStore.pagination.lastPage
+)
+
+const loadMore = async () => {
+  if (productsStore.isLoading || productsStore.isLoadingMore || !hasMore.value) return
+  filters.value.page += 1
+  await productsStore.fetchProducts(filters.value, true)
+}
+
+// Reset and refetch from page 1 when sorting changes
+watch(
+  () => filters.value.sort,
+  () => {
+    filters.value.page = 1
+    productsStore.fetchProducts(filters.value)
+  }
+)
+
+// Infinite scroll sentinel
+const sentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
 onMounted(() => {
   productsStore.fetchCategories()
   productsStore.fetchProducts(filters.value)
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) loadMore()
+    },
+    { rootMargin: '400px' }
+  )
+})
+
+// The sentinel only mounts after the initial load, so attach the observer
+// whenever it appears/disappears from the DOM.
+watch(sentinel, (el) => {
+  if (!observer) return
+  observer.disconnect()
+  if (el) observer.observe(el)
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
 })
 
 const breadcrumbs = computed(() => [
@@ -64,21 +106,19 @@ const breadcrumbs = computed(() => [
       </div>
 
       <!-- Subcategories -->
-      <div v-if="subcategories.length > 0" class="mb-10">
-        <h2 class="font-heading text-xl text-pif-black dark:text-white mb-4">Browse by Type</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div v-if="subcategories.length > 0" class="mb-8">
+        <h2 class="font-heading text-base text-pif-black dark:text-white mb-3">Browse by Type</h2>
+        <div class="flex flex-wrap gap-2">
           <NuxtLink
             v-for="sub in subcategories"
             :key="sub.slug"
             :to="`/categories/${slug}/${sub.slug}`"
-            class="group bg-white dark:bg-dark-200 rounded-xl shadow-sm hover:shadow-md dark:shadow-black/50 transition-all p-4 text-center border border-gray-100 dark:border-dark-600 hover:border-pif-green dark:hover:border-pif-gold"
+            class="group inline-flex items-center gap-2 bg-white dark:bg-dark-200 rounded-full shadow-sm hover:shadow-md dark:shadow-black/50 transition-all px-4 py-2 border border-gray-100 dark:border-dark-600 hover:border-pif-green dark:hover:border-pif-gold"
           >
-            <div class="w-12 h-12 mx-auto mb-3 bg-pif-cream dark:bg-dark-300 rounded-full flex items-center justify-center group-hover:bg-pif-green-dark dark:group-hover:bg-pif-gold transition-colors">
-              <Icon name="heroicons:tag" class="w-6 h-6 text-pif-green dark:text-pif-gold group-hover:text-white dark:group-hover:text-pif-black transition-colors" />
-            </div>
-            <h3 class="font-medium text-pif-black dark:text-white group-hover:text-pif-green-dark dark:group-hover:text-pif-gold transition-colors">
+            <Icon name="heroicons:tag" class="w-4 h-4 text-pif-green dark:text-pif-gold transition-colors" />
+            <span class="text-sm font-medium text-pif-black dark:text-white group-hover:text-pif-green-dark dark:group-hover:text-pif-gold transition-colors">
               {{ sub.name }}
-            </h3>
+            </span>
           </NuxtLink>
         </div>
       </div>
@@ -112,13 +152,23 @@ const breadcrumbs = computed(() => [
         <p class="text-gray-500 dark:text-gray-400">Check back soon for new arrivals.</p>
       </div>
 
-      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        <ProductCard
-          v-for="product in productsStore.products"
-          :key="product.id"
-          :product="product"
-        />
-      </div>
+      <template v-else>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <ProductCard
+            v-for="product in productsStore.products"
+            :key="product.id"
+            :product="product"
+          />
+        </div>
+
+        <!-- Load-more spinner -->
+        <div v-if="productsStore.isLoadingMore" class="flex justify-center py-10">
+          <PSpinner size="md" />
+        </div>
+
+        <!-- Infinite scroll sentinel -->
+        <div ref="sentinel" class="h-px w-full" aria-hidden="true" />
+      </template>
     </div>
   </div>
 </template>

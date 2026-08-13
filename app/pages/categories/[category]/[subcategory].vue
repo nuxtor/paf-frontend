@@ -18,12 +18,20 @@ const subcategory = computed(() =>
 const filters = ref({
   category: subcategorySlug,
   sort: (route.query.sort as string) || 'newest',
-  page: Number(route.query.page) || 1,
+  page: 1,
 })
 
 const fetchData = () => productsStore.fetchProducts(filters.value)
 
-onMounted(fetchData)
+const hasMore = computed(
+  () => productsStore.pagination.currentPage < productsStore.pagination.lastPage
+)
+
+const loadMore = async () => {
+  if (productsStore.isLoading || productsStore.isLoadingMore || !hasMore.value) return
+  filters.value.page += 1
+  await productsStore.fetchProducts(filters.value, true)
+}
 
 watch(
   () => filters.value.sort,
@@ -32,6 +40,32 @@ watch(
     fetchData()
   }
 )
+
+// Infinite scroll sentinel
+const sentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  fetchData()
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0]?.isIntersecting) loadMore()
+    },
+    { rootMargin: '400px' }
+  )
+})
+
+// The sentinel only mounts after the initial load, so attach the observer
+// whenever it appears/disappears from the DOM.
+watch(sentinel, (el) => {
+  if (!observer) return
+  observer.disconnect()
+  if (el) observer.observe(el)
+})
+
+onBeforeUnmount(() => {
+  observer?.disconnect()
+})
 
 useSeoMeta({
   title: () => `${subcategory.value?.name || subcategorySlug} | ${parentCategory.value?.name || categorySlug} | Premium Abrahimic Foods`,
@@ -103,7 +137,8 @@ const breadcrumbs = computed(() => [
       </div>
 
       <!-- Products -->
-      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+      <template v-else>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <article
           v-for="product in productsStore.products"
           :key="product.id"
@@ -149,6 +184,15 @@ const breadcrumbs = computed(() => [
           </div>
         </article>
       </div>
+
+        <!-- Load-more spinner -->
+        <div v-if="productsStore.isLoadingMore" class="flex justify-center py-10">
+          <PSpinner size="md" />
+        </div>
+
+        <!-- Infinite scroll sentinel -->
+        <div ref="sentinel" class="h-px w-full" aria-hidden="true" />
+      </template>
 
       <div class="text-center mt-12">
         <NuxtLink
