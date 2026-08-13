@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CONTACT_PHONES, SHOP_HOURS } from '~/utils/constants'
+
 useSeoMeta({
   title: 'Contact Us | Premium Abrahimic Foods',
   description: 'Get in touch with Premium Abrahimic Foods. We are here to help.',
@@ -70,12 +72,28 @@ const breadcrumbs = [{ label: 'Contact Us' }]
               </div>
               <div>
                 <h3 class="font-medium text-pif-black">Phone</h3>
-                <a
-                  :href="`tel:${appConfig.contact.phone}`"
-                  class="text-gray-600 hover:text-pif-green-dark"
-                >
-                  {{ appConfig.contact.phone }}
-                </a>
+                <ul class="space-y-1.5 mt-1">
+                  <li
+                    v-for="phone in CONTACT_PHONES"
+                    :key="phone.number"
+                    class="flex items-center flex-wrap gap-x-2 gap-y-0.5"
+                  >
+                    <a :href="telHref(phone.number)" class="text-gray-700 hover:text-pif-green-dark">
+                      {{ phone.number }}
+                    </a>
+                    <span class="text-sm text-gray-500">- {{ phone.hours }}</span>
+                    <a
+                      v-if="phone.whatsapp"
+                      :href="whatsappHref(phone.number)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :aria-label="`Message ${phone.number} on WhatsApp`"
+                      class="text-[#25D366] hover:opacity-80 transition-opacity"
+                    >
+                      <Icon name="mdi:whatsapp" class="w-5 h-5" />
+                    </a>
+                  </li>
+                </ul>
               </div>
             </div>
 
@@ -84,10 +102,11 @@ const breadcrumbs = [{ label: 'Contact Us' }]
                 <Icon name="heroicons:clock" class="w-6 h-6 text-pif-green" />
               </div>
               <div>
-                <h3 class="font-medium text-pif-black">Hours</h3>
+                <h3 class="font-medium text-pif-black">Shop Open time</h3>
                 <p class="text-gray-600">
-                  Monday - Friday: 9am - 6pm<br />
-                  Saturday: 10am - 4pm
+                  <template v-for="(slot, i) in SHOP_HOURS" :key="slot.days">
+                    <br v-if="i" />{{ slot.days }}: {{ slot.time }}
+                  </template>
                 </p>
               </div>
             </div>

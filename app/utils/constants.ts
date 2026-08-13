@@ -95,6 +95,17 @@ export const NAV_LINKS = [
   { name: 'Contact', path: '/contact' },
 ] as const
 
+export const SHOP_HOURS = [
+  { days: 'Monday - Friday', time: '9am - 6pm' },
+  { days: 'Saturday', time: '10am - 4pm' },
+] as const
+
+export const CONTACT_PHONES = [
+  { number: '07930 594 995', hours: '10am to 5pm', whatsapp: true },
+  { number: '07538 514 355', hours: '10am to 5pm', whatsapp: true },
+  { number: '020 8478 0552', hours: '3pm to 6pm', whatsapp: false },
+] as const
+
 export const FOOTER_POLICIES = [
   { name: 'Alternative Products', path: '/policies/alternative-products' },
   { name: 'Delivery Policy', path: '/policies/delivery' },

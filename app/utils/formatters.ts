@@ -78,3 +78,9 @@ export const formatPhone = (phone: string): string => {
   }
   return phone
 }
+
+export const telHref = (phone: string): string => `tel:${phone.replace(/\s+/g, '')}`
+
+// UK numbers: drop the trunk "0" and prefix the country code for wa.me links.
+export const whatsappHref = (phone: string): string =>
+  `https://wa.me/44${phone.replace(/\D/g, '').replace(/^0/, '')}`

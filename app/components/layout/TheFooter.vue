@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FOOTER_POLICIES, FOOTER_INFO } from '~/utils/constants'
+import { FOOTER_POLICIES, FOOTER_INFO, CONTACT_PHONES, SHOP_HOURS } from '~/utils/constants'
 import type { CmsMenuItem } from '~/types/cms'
 
 const appConfig = useAppConfig()
@@ -8,7 +8,6 @@ const { getAssetUrl } = useAsset()
 const currentYear = new Date().getFullYear()
 
 const contactEmail = computed(() => appConfig?.contact?.email ?? '')
-const contactPhone = computed(() => appConfig?.contact?.phone ?? '')
 const socialFacebook = computed(() => appConfig?.social?.facebook ?? '')
 const socialInstagram = computed(() => appConfig?.social?.instagram ?? '')
 const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
@@ -138,14 +137,39 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                 {{ contactEmail }}
               </a>
             </li>
-            <li v-if="contactPhone" class="flex items-center justify-center md:justify-start gap-2">
+            <li
+              v-for="phone in CONTACT_PHONES"
+              :key="phone.number"
+              class="flex items-center justify-center md:justify-start gap-2"
+            >
               <Icon name="heroicons:phone" class="w-4 h-4 md:w-5 md:h-5 text-pif-green dark:text-pif-gold flex-shrink-0" />
               <a
-                :href="`tel:${contactPhone}`"
+                :href="telHref(phone.number)"
                 class="text-sm md:text-base hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               >
-                {{ contactPhone }}
+                {{ phone.number }}
               </a>
+              <span class="text-xs md:text-sm text-gray-500 dark:text-gray-500">- {{ phone.hours }}</span>
+              <a
+                v-if="phone.whatsapp"
+                :href="whatsappHref(phone.number)"
+                target="_blank"
+                rel="noopener noreferrer"
+                :aria-label="`Message ${phone.number} on WhatsApp`"
+                class="text-[#25D366] hover:opacity-80 transition-opacity flex-shrink-0"
+              >
+                <Icon name="mdi:whatsapp" class="w-4 h-4 md:w-5 md:h-5" />
+              </a>
+            </li>
+          </ul>
+
+          <!-- Shop Opening Hours -->
+          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mt-6 mb-3">
+            Shop Open time
+          </h4>
+          <ul class="space-y-1 text-gray-600 dark:text-gray-400">
+            <li v-for="slot in SHOP_HOURS" :key="slot.days" class="text-sm md:text-base">
+              {{ slot.days }}: {{ slot.time }}
             </li>
           </ul>
         </div>
