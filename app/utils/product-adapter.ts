@@ -38,6 +38,7 @@ interface ApiProductVariant {
   sku: string
   price: string | number
   compare_at_price?: string | number | null
+  unit_label?: string | null
   stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
   // Populated variants send an object ({ Size: 'Large' }); empty ones send [].
   attributes?: Record<string, string> | string[] | null
@@ -129,6 +130,7 @@ const adaptVariant = (v: ApiProductVariant, productId: number): ProductVariant =
     sku: v.sku,
     price: toNum(v.price),
     compare_at_price: v.compare_at_price != null ? toNum(v.compare_at_price) : undefined,
+    unit_label: v.unit_label ?? undefined,
     stock_status: v.stock_status,
     is_active: v.is_active ?? true,
     attributes,

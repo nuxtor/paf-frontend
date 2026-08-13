@@ -46,6 +46,8 @@ export interface ProductVariant {
   compare_at_price?: number
   weight?: number
   weight_unit?: 'g' | 'kg'
+  // Variant-level unit descriptor, e.g. "500g" — annotates the pack price.
+  unit_label?: string
   stock_status?: 'in_stock' | 'low_stock' | 'out_of_stock'
   is_active?: boolean
   // Map of option name -> selected value, e.g. { Size: 'Large', Type: 'Hot' }

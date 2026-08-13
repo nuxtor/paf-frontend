@@ -15,7 +15,7 @@ export default {
       colors: {
         pif: {
           green: {
-            dark: '#1B4332',
+            dark: '#3da052',
             DEFAULT: '#2D6A4F',
             light: '#40916C',
           },

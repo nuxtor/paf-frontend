@@ -41,7 +41,7 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'Premium halal meat and food delivered to your door. Quality certified halal beef, lamb, chicken & more. Serving UK households and wholesale buyers.',
         },
-        { name: 'theme-color', content: '#1B4332' },
+        { name: 'theme-color', content: '#3da052' },
       ],
       link: [
         { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16.png' },

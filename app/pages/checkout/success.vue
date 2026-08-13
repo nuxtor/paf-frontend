@@ -106,10 +106,15 @@ onMounted(async () => {
           <div
             v-for="item in order.items"
             :key="item.id"
-            class="flex justify-between text-sm"
+            class="flex justify-between text-sm gap-4"
           >
-            <span class="text-gray-700">{{ item.name }} x {{ item.quantity }}</span>
-            <span class="font-medium">{{ formatCurrency(item.line_total) }}</span>
+            <span class="text-gray-700">
+              {{ item.name }} x {{ item.quantity }}
+              <span v-if="item.note" class="block text-xs text-gray-500 italic">
+                Note: {{ item.note }}
+              </span>
+            </span>
+            <span class="font-medium whitespace-nowrap">{{ formatCurrency(item.line_total) }}</span>
           </div>
         </div>
       </div>

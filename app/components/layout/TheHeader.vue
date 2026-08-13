@@ -57,8 +57,8 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
     <div class="bg-gray-100 dark:bg-dark-100 text-sm py-2 border-b border-gray-200 dark:border-dark-600">
       <div class="container">
         <div class="flex items-center justify-between">
-          <p class="text-gray-600 dark:text-gray-400 text-xs md:text-sm">
-            Nationwide Delivery | Free Delivery On Orders Over £100
+          <p class="text-gray-600 dark:text-gray-400 text-xs xl:text-sm xl:whitespace-nowrap">
+            Nationwide Delivery | Min. Order £40 | Delivery £5.99 in 24–48h | Free Over £100
           </p>
 
           <div class="hidden md:flex items-center gap-4">
