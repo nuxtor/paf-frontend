@@ -59,9 +59,6 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
             class="h-10 mx-auto dark:brightness-110"
           />
         </NuxtLink>
-        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-          The Premium Halal Food
-        </p>
         <div class="flex justify-center gap-3 mt-4">
           <a
             v-if="socialFacebook"
@@ -193,9 +190,6 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
               class="h-12 dark:brightness-110"
             />
           </NuxtLink>
-          <p class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest">
-            The Premium Halal Food
-          </p>
           <div class="flex gap-3 mt-4 lg:justify-end">
             <a
               v-if="socialFacebook"
