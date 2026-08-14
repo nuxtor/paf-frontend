@@ -57,18 +57,18 @@ const breadcrumbs = [{ label: 'Contact Us' }]
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Contact Info -->
         <div class="lg:col-span-1">
-          <h2 class="font-heading text-2xl text-pif-black mb-6">Get in Touch</h2>
+          <h2 class="font-heading text-2xl text-pif-black dark:text-white mb-6">Get in Touch</h2>
 
           <div class="space-y-6">
             <div class="flex items-start gap-4">
-              <div class="p-3 bg-pif-cream rounded-lg">
+              <div class="p-3 bg-pif-cream dark:bg-dark-300 rounded-lg">
                 <Icon name="heroicons:envelope" class="w-6 h-6 text-pif-green" />
               </div>
               <div>
-                <h3 class="font-medium text-pif-black">Email</h3>
+                <h3 class="font-medium text-pif-black dark:text-white">Email</h3>
                 <a
                   :href="`mailto:${appConfig.contact.email}`"
-                  class="text-gray-600 hover:text-pif-green-dark"
+                  class="text-gray-600 dark:text-gray-300 hover:text-pif-green-dark dark:hover:text-pif-gold"
                 >
                   {{ appConfig.contact.email }}
                 </a>
@@ -76,21 +76,21 @@ const breadcrumbs = [{ label: 'Contact Us' }]
             </div>
 
             <div class="flex items-start gap-4">
-              <div class="p-3 bg-pif-cream rounded-lg">
+              <div class="p-3 bg-pif-cream dark:bg-dark-300 rounded-lg">
                 <Icon name="heroicons:phone" class="w-6 h-6 text-pif-green" />
               </div>
               <div>
-                <h3 class="font-medium text-pif-black">Phone</h3>
+                <h3 class="font-medium text-pif-black dark:text-white">Phone</h3>
                 <ul class="space-y-1.5 mt-1">
                   <li
                     v-for="phone in CONTACT_PHONES"
                     :key="phone.number"
                     class="flex items-center flex-wrap gap-x-2 gap-y-0.5"
                   >
-                    <a :href="telHref(phone.number)" class="text-gray-700 hover:text-pif-green-dark">
+                    <a :href="telHref(phone.number)" class="text-gray-700 dark:text-gray-300 hover:text-pif-green-dark dark:hover:text-pif-gold">
                       {{ phone.number }}
                     </a>
-                    <span class="text-sm text-gray-500">- {{ phone.hours }}</span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">- {{ phone.hours }}</span>
                     <a
                       v-if="phone.whatsapp"
                       :href="whatsappHref(phone.number)"
@@ -107,12 +107,12 @@ const breadcrumbs = [{ label: 'Contact Us' }]
             </div>
 
             <div class="flex items-start gap-4">
-              <div class="p-3 bg-pif-cream rounded-lg">
+              <div class="p-3 bg-pif-cream dark:bg-dark-300 rounded-lg">
                 <Icon name="heroicons:map-pin" class="w-6 h-6 text-pif-green" />
               </div>
               <div>
-                <h3 class="font-medium text-pif-black">Visit Us</h3>
-                <address class="text-gray-600 not-italic">
+                <h3 class="font-medium text-pif-black dark:text-white">Visit Us</h3>
+                <address class="text-gray-600 dark:text-gray-300 not-italic">
                   {{ appConfig.contact.address.line1 }}<br />
                   {{ appConfig.contact.address.city }}, {{ appConfig.contact.address.county }}<br />
                   {{ appConfig.contact.address.postcode }}
@@ -121,7 +121,7 @@ const breadcrumbs = [{ label: 'Contact Us' }]
                   :href="mapsHref"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="mt-1 inline-block text-sm text-pif-green-dark hover:underline"
+                  class="mt-1 inline-block text-sm text-pif-green-dark dark:text-pif-gold hover:underline"
                 >
                   View on map
                 </a>
@@ -129,12 +129,12 @@ const breadcrumbs = [{ label: 'Contact Us' }]
             </div>
 
             <div class="flex items-start gap-4">
-              <div class="p-3 bg-pif-cream rounded-lg">
+              <div class="p-3 bg-pif-cream dark:bg-dark-300 rounded-lg">
                 <Icon name="heroicons:clock" class="w-6 h-6 text-pif-green" />
               </div>
               <div>
-                <h3 class="font-medium text-pif-black">Shop Open time</h3>
-                <p class="text-gray-600">
+                <h3 class="font-medium text-pif-black dark:text-white">Shop Open time</h3>
+                <p class="text-gray-600 dark:text-gray-300">
                   <template v-for="(slot, i) in SHOP_HOURS" :key="slot.days">
                     <br v-if="i" />{{ slot.days }}: {{ slot.time }}
                   </template>
@@ -151,8 +151,8 @@ const breadcrumbs = [{ label: 'Contact Us' }]
               <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Icon name="heroicons:check" class="w-8 h-8 text-green-600" />
               </div>
-              <h3 class="font-heading text-xl text-pif-black mb-2">Message Sent!</h3>
-              <p class="text-gray-600">Thank you for contacting us. We'll get back to you soon.</p>
+              <h3 class="font-heading text-xl text-pif-black dark:text-white mb-2">Message Sent!</h3>
+              <p class="text-gray-600 dark:text-gray-300">Thank you for contacting us. We'll get back to you soon.</p>
             </div>
 
             <form v-else class="space-y-4" @submit.prevent="handleSubmit">
@@ -163,13 +163,13 @@ const breadcrumbs = [{ label: 'Contact Us' }]
                 <PInput v-model="form.subject" label="Subject" placeholder="How can we help?" required />
               </div>
               <div>
-                <label class="block text-sm font-medium text-pif-black mb-1">Message</label>
+                <label class="block text-sm font-medium text-pif-black dark:text-white mb-1">Message</label>
                 <textarea
                   v-model="form.message"
                   rows="5"
                   required
                   placeholder="Tell us more..."
-                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pif-green focus:border-pif-green"
+                  class="w-full px-4 py-2.5 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-pif-green dark:focus:ring-pif-gold focus:border-pif-green"
                 />
               </div>
               <PButton type="submit" variant="primary" size="lg" :loading="isLoading">
