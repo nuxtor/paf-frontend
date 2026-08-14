@@ -127,7 +127,9 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
           <!-- Navigation -->
           <nav class="flex-1 overflow-y-auto p-4">
             <div v-for="section in sections" :key="section.heading" class="mb-6">
-              <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              <!-- No font-semibold: Bebas Neue has one weight, so it would only
+                   ask the browser to fake a bold. -->
+              <h3 class="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 {{ section.heading }}
               </h3>
               <ul class="space-y-1">
@@ -138,7 +140,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                       :href="item.url"
                       :target="item.target && item.target !== '_self' ? item.target : undefined"
                       rel="noopener noreferrer"
-                      class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                      class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg font-heading text-lg tracking-wide text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                       @click="handleNavClick"
                     >
                       <Icon
@@ -151,7 +153,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                     <NuxtLink
                       v-else
                       :to="item.url"
-                      class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                      class="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg font-heading text-lg tracking-wide text-pif-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                       @click="handleNavClick"
                     >
                       <Icon
@@ -183,7 +185,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                         :href="child.url"
                         :target="child.target && child.target !== '_self' ? child.target : undefined"
                         rel="noopener noreferrer"
-                        class="block px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                        class="block px-3 py-2 rounded-lg font-heading text-base tracking-wide text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                         @click="handleNavClick"
                       >
                         {{ child.label }}
@@ -191,7 +193,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                       <NuxtLink
                         v-else
                         :to="child.url"
-                        class="block px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
+                        class="block px-3 py-2 rounded-lg font-heading text-base tracking-wide text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors"
                         @click="handleNavClick"
                       >
                         {{ child.label }}

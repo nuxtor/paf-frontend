@@ -105,7 +105,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
               v-for="link in NAV_LINKS"
               :key="link.path"
               :to="link.path"
-              class="text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors text-sm"
+              class="text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors font-heading text-base tracking-wide"
             >
               {{ link.name }}
             </NuxtLink>
@@ -166,7 +166,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
               :href="item.url"
               :target="item.target && item.target !== '_self' ? item.target : undefined"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 py-3 text-white text-sm font-medium hover:text-pif-gold transition-colors"
+              class="inline-flex items-center gap-1 py-3 text-white font-heading text-base tracking-wide hover:text-pif-gold transition-colors"
             >
               <Icon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
               {{ item.label }}
@@ -179,7 +179,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
             <NuxtLink
               v-else
               :to="item.url"
-              class="inline-flex items-center gap-1 py-3 text-white text-sm font-medium hover:text-pif-gold transition-colors"
+              class="inline-flex items-center gap-1 py-3 text-white font-heading text-base tracking-wide hover:text-pif-gold transition-colors"
             >
               <Icon v-if="item.icon" :name="item.icon" class="w-4 h-4" />
               {{ item.label }}
@@ -200,14 +200,14 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                     :href="child.url"
                     :target="child.target && child.target !== '_self' ? child.target : undefined"
                     rel="noopener noreferrer"
-                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
+                    class="block px-4 py-2 font-heading text-base tracking-wide text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
                   >
                     {{ child.label }}
                   </a>
                   <NuxtLink
                     v-else
                     :to="child.url"
-                    class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
+                    class="block px-4 py-2 font-heading text-base tracking-wide text-gray-700 dark:text-gray-300 hover:bg-pif-cream dark:hover:bg-dark-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
                   >
                     {{ child.label }}
                   </NuxtLink>
@@ -215,7 +215,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
                 <li v-if="!isExternal(item.url)" class="border-t border-gray-100 dark:border-dark-600 mt-2 pt-2">
                   <NuxtLink
                     :to="item.url"
-                    class="block px-4 py-2 text-sm font-medium text-pif-green-dark dark:text-pif-gold hover:bg-pif-cream dark:hover:bg-dark-400 transition-colors"
+                    class="block px-4 py-2 font-heading text-base tracking-wide text-pif-green-dark dark:text-pif-gold hover:bg-pif-cream dark:hover:bg-dark-400 transition-colors"
                   >
                     View All {{ item.label }}
                   </NuxtLink>
@@ -226,7 +226,7 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
         </ul>
         <div class="md:hidden py-3 text-center">
           <button
-            class="inline-flex items-center gap-2 text-white text-sm"
+            class="inline-flex items-center gap-2 text-white font-heading text-base tracking-wide"
             @click="uiStore.toggleMobileMenu"
           >
             <Icon name="heroicons:bars-3" class="w-5 h-5" />
