@@ -14,7 +14,7 @@ const { isDark } = useTheme()
 const { $stripe } = useNuxtApp() as { $stripe: Stripe | null }
 
 useSeoMeta({
-  title: 'Checkout | Premium Abrahimic Foods',
+  title: 'Checkout | Premium Abrahamic Foods',
 })
 
 // Redirect if cart is empty

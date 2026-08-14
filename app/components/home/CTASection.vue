@@ -22,7 +22,7 @@ const backgroundStyle = computed(() => ({
           Premium Quality, Delivered Fresh
         </h2>
         <p class="text-lg md:text-xl text-white/90 mb-8">
-          Join thousands of satisfied customers who trust Premium Abrahimic Foods for their halal
+          Join thousands of satisfied customers who trust Premium Abrahamic Foods for their halal
           meat and grocery needs. Experience the difference that quality makes.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">

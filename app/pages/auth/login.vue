@@ -26,7 +26,7 @@ const handleSubmit = async () => {
 }
 
 useSeoMeta({
-  title: 'Sign In | Premium Abrahimic Foods',
+  title: 'Sign In | Premium Abrahamic Foods',
 })
 </script>
 

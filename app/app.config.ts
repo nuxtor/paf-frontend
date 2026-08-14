@@ -1,8 +1,8 @@
 export default defineAppConfig({
-  siteName: 'Premium Abrahimic Foods',
+  siteName: 'Premium Abrahamic Foods',
   siteTagline: 'The Premium Halal Food',
   contact: {
-    email: 'info@premiumabrahimicfoods.co.uk',
+    email: 'info@premiumabrahamicfoods.co.uk',
     phone: '+44 123 456 7890',
   },
   social: {

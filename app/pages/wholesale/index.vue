@@ -2,7 +2,7 @@
 const { getAssetUrl } = useAsset()
 
 useSeoMeta({
-  title: 'Trade Account | B2B Wholesale | Premium Abrahimic Foods',
+  title: 'Trade Account | B2B Wholesale | Premium Abrahamic Foods',
   description: 'Login or register for a trade account. Wholesale pricing for restaurants, butchers, and retailers.',
 })
 

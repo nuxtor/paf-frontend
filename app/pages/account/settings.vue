@@ -6,7 +6,7 @@ definePageMeta({
 const authStore = useAuthStore()
 
 useSeoMeta({
-  title: 'Account Settings | Premium Abrahimic Foods',
+  title: 'Account Settings | Premium Abrahamic Foods',
 })
 
 const profileForm = ref({

@@ -6,7 +6,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Order Confirmed | Premium Abrahimic Foods',
+  title: 'Order Confirmed | Premium Abrahamic Foods',
 })
 
 const route = useRoute()

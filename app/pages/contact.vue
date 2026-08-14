@@ -2,8 +2,8 @@
 import { CONTACT_PHONES, SHOP_HOURS } from '~/utils/constants'
 
 useSeoMeta({
-  title: 'Contact Us | Premium Abrahimic Foods',
-  description: 'Get in touch with Premium Abrahimic Foods. We are here to help.',
+  title: 'Contact Us | Premium Abrahamic Foods',
+  description: 'Get in touch with Premium Abrahamic Foods. We are here to help.',
 })
 
 const appConfig = useAppConfig()

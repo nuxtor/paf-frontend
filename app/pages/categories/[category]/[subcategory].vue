@@ -68,7 +68,7 @@ onBeforeUnmount(() => {
 })
 
 useSeoMeta({
-  title: () => `${subcategory.value?.name || subcategorySlug} | ${parentCategory.value?.name || categorySlug} | Premium Abrahimic Foods`,
+  title: () => `${subcategory.value?.name || subcategorySlug} | ${parentCategory.value?.name || categorySlug} | Premium Abrahamic Foods`,
   description: () => `Browse our premium halal ${subcategory.value?.name?.toLowerCase() || subcategorySlug} products. Quality certified, delivered fresh.`,
 })
 

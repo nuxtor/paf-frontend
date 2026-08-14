@@ -44,7 +44,7 @@ const formatDate = (date: string) =>
   new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(new Date(date))
 
 useSeoMeta({
-  title: 'Order History | Premium Abrahimic Foods',
+  title: 'Order History | Premium Abrahamic Foods',
 })
 </script>
 

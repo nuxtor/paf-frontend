@@ -19,7 +19,7 @@ const filters = ref({
 })
 
 useSeoMeta({
-  title: () => `${category.value?.name || 'Category'} | Premium Abrahimic Foods`,
+  title: () => `${category.value?.name || 'Category'} | Premium Abrahamic Foods`,
   description: () => category.value?.description || 'Browse our premium halal products.',
 })
 

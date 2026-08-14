@@ -36,7 +36,7 @@ const handleSubmit = async () => {
 }
 
 useSeoMeta({
-  title: 'Create Account | Premium Abrahimic Foods',
+  title: 'Create Account | Premium Abrahamic Foods',
 })
 </script>
 
@@ -44,7 +44,7 @@ useSeoMeta({
   <div class="bg-white dark:bg-dark-200 rounded-xl shadow-sm dark:shadow-black/50 p-8 border border-transparent dark:border-dark-600">
     <div class="text-center mb-8">
       <h1 class="font-heading text-2xl text-pif-black dark:text-white mb-2">Create Account</h1>
-      <p class="text-gray-600 dark:text-gray-400">Join Premium Abrahimic Foods today</p>
+      <p class="text-gray-600 dark:text-gray-400">Join Premium Abrahamic Foods today</p>
     </div>
 
     <form class="space-y-4" @submit.prevent="handleSubmit">

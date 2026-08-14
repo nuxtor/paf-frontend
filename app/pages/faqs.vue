@@ -7,7 +7,7 @@ await useAsyncData('cms-faqs', async () => {
 })
 
 useSeoMeta({
-  title: 'Frequently Asked Questions | Premium Abrahimic Foods',
+  title: 'Frequently Asked Questions | Premium Abrahamic Foods',
   description:
     'Find answers to common questions about our halal certification, delivery, returns and wholesale services.',
 })

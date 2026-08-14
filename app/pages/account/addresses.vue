@@ -10,7 +10,7 @@ const { apiFetch } = useApi()
 const uiStore = useUiStore()
 
 useSeoMeta({
-  title: 'Address Book | Premium Abrahimic Foods',
+  title: 'Address Book | Premium Abrahamic Foods',
 })
 
 const showForm = ref(false)

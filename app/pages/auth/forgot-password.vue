@@ -23,7 +23,7 @@ const handleSubmit = async () => {
 }
 
 useSeoMeta({
-  title: 'Forgot Password | Premium Abrahimic Foods',
+  title: 'Forgot Password | Premium Abrahamic Foods',
 })
 </script>
 

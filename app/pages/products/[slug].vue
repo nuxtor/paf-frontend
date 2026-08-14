@@ -140,7 +140,7 @@ const handleAddToCart = async () => {
 }
 
 useSeoMeta({
-  title: () => `${product.value?.name ?? 'Product'} | Premium Abrahimic Foods`,
+  title: () => `${product.value?.name ?? 'Product'} | Premium Abrahamic Foods`,
   description: () => product.value?.short_description ?? '',
 })
 
@@ -307,7 +307,7 @@ const breadcrumbs = computed(() => [
                 v-model="note"
                 rows="2"
                 maxlength="500"
-                placeholder="e.g. no bones, cut into small pieces"
+                placeholder="e.g. cut into small pieces"
                 class="w-full rounded-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-300 text-pif-black dark:text-white placeholder-gray-400 dark:placeholder-gray-500 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pif-green dark:focus:ring-pif-gold"
               />
               <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">

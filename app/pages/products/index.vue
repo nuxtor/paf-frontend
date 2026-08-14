@@ -13,8 +13,8 @@ const filters = ref({
 useSeoMeta({
   title: () =>
     filters.value.search
-      ? `Search: ${filters.value.search} | Premium Abrahimic Foods`
-      : 'All Products | Premium Abrahimic Foods',
+      ? `Search: ${filters.value.search} | Premium Abrahamic Foods`
+      : 'All Products | Premium Abrahamic Foods',
   description: 'Browse our full range of premium halal meat and food products.',
 })
 

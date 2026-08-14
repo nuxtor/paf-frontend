@@ -3,7 +3,7 @@ const cartStore = useCartStore()
 const { getAssetUrl } = useAsset()
 
 useSeoMeta({
-  title: 'Shopping Cart | Premium Abrahimic Foods',
+  title: 'Shopping Cart | Premium Abrahamic Foods',
 })
 
 const breadcrumbs = [{ label: 'Cart' }]

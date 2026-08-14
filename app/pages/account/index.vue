@@ -6,7 +6,7 @@ definePageMeta({
 const authStore = useAuthStore()
 
 useSeoMeta({
-  title: 'My Account | Premium Abrahimic Foods',
+  title: 'My Account | Premium Abrahamic Foods',
 })
 
 const quickLinks = [

@@ -31,7 +31,7 @@ if (!data.value) {
 const page = computed(() => data.value!)
 
 useSeoMeta({
-  title: () => page.value.meta_title || `${page.value.title} | Premium Abrahimic Foods`,
+  title: () => page.value.meta_title || `${page.value.title} | Premium Abrahamic Foods`,
   description: () => page.value.meta_description || undefined,
   ogTitle: () => page.value.meta_title || page.value.title,
   ogDescription: () => page.value.meta_description || undefined,

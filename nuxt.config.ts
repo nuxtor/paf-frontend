@@ -32,7 +32,7 @@ export default defineNuxtConfig({
           tagPosition: 'head',
         },
       ],
-      title: 'Premium Abrahimic Foods | Quality Halal Meat & Food Delivery UK',
+      title: 'Premium Abrahamic Foods | Quality Halal Meat & Food Delivery UK',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -68,7 +68,7 @@ export default defineNuxtConfig({
       apiBaseUrl: process.env.NUXT_API_BACKEND_URL ? `${process.env.NUXT_API_BACKEND_URL}/api/v1` : 'https://api.premiumabrahamicfoods.co.uk/api/v1',
       imageBaseUrl: process.env.NUXT_API_BACKEND_URL ? `${process.env.NUXT_API_BACKEND_URL}/storage` : 'https://api.premiumabrahamicfoods.co.uk/storage',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      siteName: 'Premium Abrahimic Foods',
+      siteName: 'Premium Abrahamic Foods',
       stripePublishableKey: '',
       enableWholesale: true,
       enableReviews: true,
