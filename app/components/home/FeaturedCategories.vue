@@ -33,7 +33,7 @@ const resolveCategoryImage = (image?: string) => {
         </p>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <NuxtLink
           v-for="category in categories"
           :key="category.id"
