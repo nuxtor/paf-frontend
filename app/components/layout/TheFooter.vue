@@ -4,7 +4,7 @@ import type { CmsMenuItem } from '~/types/cms'
 
 const appConfig = useAppConfig()
 const cmsStore = useCmsStore()
-const { getAssetUrl } = useAsset()
+const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 const currentYear = new Date().getFullYear()
 
 const contactEmail = computed(() => appConfig?.contact?.email ?? '')
@@ -53,8 +53,8 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
       <div class="text-center mb-8 md:hidden">
         <NuxtLink to="/" class="inline-block mb-3">
           <img
-            :src="getAssetUrl('images/paf-logo-main.png')"
-            alt="Premium Abrahimic Foods"
+            :src="logoSrc"
+            :alt="logoAlt"
             class="h-10 mx-auto dark:brightness-110"
           />
         </NuxtLink>
@@ -178,8 +178,8 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
         <div class="hidden md:block lg:text-right">
           <NuxtLink to="/" class="inline-block mb-4">
             <img
-              :src="getAssetUrl('images/paf-logo-main.png')"
-              alt="Premium Abrahimic Foods"
+              :src="logoSrc"
+              :alt="logoAlt"
               class="h-12 dark:brightness-110"
             />
           </NuxtLink>

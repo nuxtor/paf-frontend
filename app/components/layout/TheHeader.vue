@@ -6,6 +6,7 @@ const cartStore = useCartStore()
 const uiStore = useUiStore()
 const cmsStore = useCmsStore()
 const { isDark, toggleTheme } = useTheme()
+const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 
 const isScrolled = ref(false)
 const isMounted = ref(false)
@@ -139,8 +140,8 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
     <div class="py-6">
       <NuxtLink to="/" class="flex items-center justify-center gap-4 md:gap-8">
         <img
-          src="/images/logo.png"
-          alt="Premium Abrahimic Foods"
+          :src="logoSrc"
+          :alt="logoAlt"
           class="h-16 md:h-24 w-auto flex-shrink-0"
         />
         <div class="text-center">

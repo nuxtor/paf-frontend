@@ -5,6 +5,7 @@ import type {
   CmsMenu,
   CmsPageSummary,
   CmsPromoBlock,
+  CmsSiteBranding,
   CmsTestimonial,
   PromoPlacement,
 } from '~/types/cms'
@@ -32,6 +33,13 @@ export const useCmsStore = defineStore('cms', () => {
 
   const faqs = ref<CmsFaq[]>([])
   const faqsLoaded = ref(false)
+
+  const siteBranding = ref<CmsSiteBranding | null>(null)
+  const siteLoaded = ref(false)
+
+  // Null until an admin uploads one; useSiteLogo falls back to the bundled file.
+  const siteLogo = computed(() => siteBranding.value?.logo ?? null)
+  const siteLogoAlt = computed(() => siteBranding.value?.logo_alt ?? '')
 
   const headerMenu = computed(() => menus.value.header ?? null)
   const footerMenu = computed(() => menus.value.footer ?? null)
@@ -103,6 +111,17 @@ export const useCmsStore = defineStore('cms', () => {
     }
   }
 
+  const fetchSite = async (force = false) => {
+    if (siteLoaded.value && !force) return
+    const { getSite } = useCms()
+    try {
+      siteBranding.value = await getSite()
+      siteLoaded.value = true
+    } catch (error) {
+      console.error('Failed to fetch site branding', error)
+    }
+  }
+
   return {
     heroSlides,
     promoBlocks,
@@ -118,9 +137,14 @@ export const useCmsStore = defineStore('cms', () => {
     pagesLoaded,
     faqs,
     faqsLoaded,
+    siteBranding,
+    siteLoaded,
+    siteLogo,
+    siteLogoAlt,
     fetchHome,
     fetchMenu,
     fetchPages,
     fetchFaqs,
+    fetchSite,
   }
 })

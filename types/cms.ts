@@ -86,3 +86,13 @@ export interface CmsMenu {
   slug: string
   items: CmsMenuItem[]
 }
+
+/**
+ * Site-wide branding from GET /site, set in the admin under Settings > Branding.
+ * `logo` is an absolute URL, or null until one has been uploaded.
+ */
+export interface CmsSiteBranding {
+  logo: string | null
+  logo_alt: string
+  site_name: string
+}

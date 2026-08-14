@@ -4,6 +4,7 @@ import type {
   CmsMenu,
   CmsPage,
   CmsPageSummary,
+  CmsSiteBranding,
 } from '~/types/cms'
 
 export const useCms = () => {
@@ -33,6 +34,8 @@ export const useCms = () => {
 
   const getMenu = (slug: string) => apiFetch<{ menu: CmsMenu }>(`/menus/${slug}`)
 
+  const getSite = () => apiFetch<CmsSiteBranding>('/site')
+
   return {
     cmsImageUrl,
     getHome,
@@ -40,5 +43,6 @@ export const useCms = () => {
     getPage,
     getFaqs,
     getMenu,
+    getSite,
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { getAssetUrl } = useAsset()
+const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 </script>
 
 <template>
@@ -10,8 +10,8 @@ const { getAssetUrl } = useAsset()
         <div class="flex items-center justify-between">
           <NuxtLink to="/" class="inline-block">
             <img
-              :src="getAssetUrl('images/paf-logo-main.png')"
-              alt="Premium Abrahimic Foods"
+              :src="logoSrc"
+              :alt="logoAlt"
               class="h-10"
             />
           </NuxtLink>

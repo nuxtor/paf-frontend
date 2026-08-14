@@ -4,7 +4,7 @@ import type { CmsMenuItem } from '~/types/cms'
 
 const uiStore = useUiStore()
 const cmsStore = useCmsStore()
-const { getAssetUrl } = useAsset()
+const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 
 watch(
   () => uiStore.isMobileMenuOpen,
@@ -111,8 +111,8 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
           <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-dark-600">
             <NuxtLink to="/" @click="handleNavClick">
               <img
-                :src="getAssetUrl('images/paf-logo-main.png')"
-                alt="Premium Abrahimic Foods"
+                :src="logoSrc"
+                :alt="logoAlt"
                 class="h-10 dark:brightness-110"
               />
             </NuxtLink>
