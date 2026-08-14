@@ -8,6 +8,15 @@ useSeoMeta({
 
 const appConfig = useAppConfig()
 
+// A search link rather than an embedded map: no third-party script, no consent
+// banner, and it opens in whichever maps app the visitor already uses.
+const mapsHref = computed(() => {
+  const a = appConfig.contact.address
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${a.line1}, ${a.city}, ${a.county}, ${a.postcode}`
+  )}`
+})
+
 const form = ref({
   name: '',
   email: '',
@@ -94,6 +103,28 @@ const breadcrumbs = [{ label: 'Contact Us' }]
                     </a>
                   </li>
                 </ul>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="p-3 bg-pif-cream rounded-lg">
+                <Icon name="heroicons:map-pin" class="w-6 h-6 text-pif-green" />
+              </div>
+              <div>
+                <h3 class="font-medium text-pif-black">Visit Us</h3>
+                <address class="text-gray-600 not-italic">
+                  {{ appConfig.contact.address.line1 }}<br />
+                  {{ appConfig.contact.address.city }}, {{ appConfig.contact.address.county }}<br />
+                  {{ appConfig.contact.address.postcode }}
+                </address>
+                <a
+                  :href="mapsHref"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-1 inline-block text-sm text-pif-green-dark hover:underline"
+                >
+                  View on map
+                </a>
               </div>
             </div>
 

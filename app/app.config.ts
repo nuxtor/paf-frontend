@@ -4,6 +4,13 @@ export default defineAppConfig({
   contact: {
     email: 'info@premiumabrahamicfoods.co.uk',
     phone: '+44 123 456 7890',
+    // Defined once here so the footer and the contact page cannot disagree.
+    address: {
+      line1: '251 Ilford Lane',
+      city: 'Ilford',
+      county: 'Essex',
+      postcode: 'IG1 2SB',
+    },
   },
   social: {
     facebook: 'https://facebook.com/premiumabrahimicfoods',

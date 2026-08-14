@@ -8,6 +8,7 @@ const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 const currentYear = new Date().getFullYear()
 
 const contactEmail = computed(() => appConfig?.contact?.email ?? '')
+const contactAddress = computed(() => appConfig?.contact?.address ?? null)
 const socialFacebook = computed(() => appConfig?.social?.facebook ?? '')
 const socialInstagram = computed(() => appConfig?.social?.instagram ?? '')
 const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
@@ -160,6 +161,15 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
               >
                 <Icon name="mdi:whatsapp" class="w-4 h-4 md:w-5 md:h-5" />
               </a>
+            </li>
+
+            <li v-if="contactAddress" class="flex items-start justify-center md:justify-start gap-2">
+              <Icon name="heroicons:map-pin" class="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-pif-green dark:text-pif-gold flex-shrink-0" />
+              <address class="text-sm md:text-base not-italic">
+                {{ contactAddress.line1 }}<br />
+                {{ contactAddress.city }}, {{ contactAddress.county }}<br />
+                {{ contactAddress.postcode }}
+              </address>
             </li>
           </ul>
 
