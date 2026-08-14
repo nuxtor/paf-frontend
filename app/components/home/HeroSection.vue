@@ -143,7 +143,7 @@ onUnmounted(() => {
                 class="max-w-2xl mx-auto text-center"
                 :style="{ color: slide.text_color || '#ffffff' }"
               >
-                <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl mb-4 italic">
+                <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl mb-4">
                   {{ slide.heading }}
                 </h1>
                 <p v-if="slide.subheading" class="text-lg md:text-xl mb-6 opacity-90">
