@@ -21,10 +21,10 @@ export default defineAppConfig({
     // Drop a 9:16 clip in public/videos/ and name it here, and it appears
     // beside the welcome copy. Left empty the section renders as a single
     // centred column, so a missing file is never a broken player on the page.
-    welcomeVideo: '',
+    welcomeVideo: '/videos/welcome-farm-to-fork.mp4',
     // Shown before the clip loads and while it is paused. Worth setting: a
     // portrait card is a large hole to leave black on a slow connection.
-    welcomeVideoPoster: '',
+    welcomeVideoPoster: '/images/welcome-video-poster.jpg',
   },
   freeDeliveryThreshold: 50,
 })
