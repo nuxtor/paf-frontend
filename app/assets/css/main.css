@@ -14,7 +14,12 @@
   h4,
   h5,
   h6 {
-    font-family: 'Ovo', serif;
+    font-family: 'Bebas Neue', 'Oswald', 'Impact', sans-serif;
+    /* Bebas Neue is condensed and caps-only, so it sets much tighter and
+       shorter than Ovo did at the same font-size. A little tracking keeps it
+       legible, and the extra line-height stops stacked headings colliding. */
+    letter-spacing: 0.02em;
+    line-height: 1.15;
   }
 
   /* Light mode (default) */

@@ -43,7 +43,7 @@ export default {
         },
       },
       fontFamily: {
-        heading: ['Ovo', 'serif'],
+        heading: ['Bebas Neue', 'Oswald', 'Impact', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
       },
       container: {
