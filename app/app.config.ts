@@ -17,5 +17,14 @@ export default defineAppConfig({
     instagram: 'https://instagram.com/premiumabrahimicfoods',
     twitter: 'https://twitter.com/paborahimicfoods',
   },
+  home: {
+    // Drop a 9:16 clip in public/videos/ and name it here, and it appears
+    // beside the welcome copy. Left empty the section renders as a single
+    // centred column, so a missing file is never a broken player on the page.
+    welcomeVideo: '',
+    // Shown before the clip loads and while it is paused. Worth setting: a
+    // portrait card is a large hole to leave black on a slow connection.
+    welcomeVideoPoster: '',
+  },
   freeDeliveryThreshold: 50,
 })
