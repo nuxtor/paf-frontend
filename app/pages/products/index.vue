@@ -55,7 +55,7 @@ const breadcrumbs = computed(() =>
 </script>
 
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-50 dark:bg-pif-black min-h-screen">
     <div class="container py-8">
       <TheBreadcrumb :items="breadcrumbs" />
 
@@ -68,7 +68,7 @@ const breadcrumbs = computed(() =>
         <div class="flex items-center gap-4">
           <select
             v-model="filters.sort"
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pif-green"
+            class="px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-200 text-pif-black dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-pif-green dark:focus:ring-pif-gold"
           >
             <option v-for="option in PRODUCT_SORT_OPTIONS" :key="option.value" :value="option.value">
               {{ option.label }}

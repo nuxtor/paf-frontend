@@ -5,7 +5,6 @@ import type { CmsMenuItem } from '~/types/cms'
 const cartStore = useCartStore()
 const uiStore = useUiStore()
 const cmsStore = useCmsStore()
-const { isDark, toggleTheme } = useTheme()
 const { src: logoSrc, alt: logoAlt } = useSiteLogo()
 
 const isScrolled = ref(false)
@@ -64,15 +63,6 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
 
           <div class="hidden md:flex items-center gap-4">
             <button
-              class="theme-toggle"
-              :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-              @click="toggleTheme"
-            >
-              <Icon v-if="isDark" name="heroicons:sun" class="w-5 h-5" />
-              <Icon v-else name="heroicons:moon" class="w-5 h-5" />
-            </button>
-
-            <button
               class="p-1 text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
               @click="uiStore.toggleSearch"
             >
@@ -112,13 +102,6 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
           </nav>
 
           <div class="flex md:hidden items-center gap-2">
-            <button
-              class="p-1 text-gray-600 dark:text-gray-400"
-              @click="toggleTheme"
-            >
-              <Icon v-if="isDark" name="heroicons:sun" class="w-5 h-5" />
-              <Icon v-else name="heroicons:moon" class="w-5 h-5" />
-            </button>
             <button
               class="p-1 text-gray-600 dark:text-gray-400"
               @click="uiStore.toggleCart"

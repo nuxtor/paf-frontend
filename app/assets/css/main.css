@@ -86,15 +86,6 @@
     @apply focus:ring-pif-gold;
   }
 
-  /* Theme toggle button */
-  .theme-toggle {
-    @apply p-2 rounded-lg transition-colors duration-200;
-    @apply text-gray-600 hover:text-pif-green-dark hover:bg-gray-100;
-  }
-
-  html.dark .theme-toggle {
-    @apply text-gray-400 hover:text-pif-gold hover:bg-dark-300;
-  }
 }
 
 @layer utilities {

@@ -1,45 +1,28 @@
+/**
+ * The storefront is dark only.
+ *
+ * There is no toggle and no saved preference: `dark` goes on <html> before
+ * first paint (see the inline script in nuxt.config) and stays there. This
+ * composable is kept so callers that need to know which palette they are
+ * drawing against — Stripe Elements on the checkout, which is an iframe and
+ * cannot read our CSS — have one place to ask.
+ */
 export const useTheme = () => {
   const colorMode = useState<'light' | 'dark'>('color-mode', () => 'dark')
 
   const isDark = computed(() => colorMode.value === 'dark')
 
-  const toggleTheme = () => {
-    colorMode.value = colorMode.value === 'light' ? 'dark' : 'light'
-    applyTheme()
-  }
-
-  const setTheme = (mode: 'light' | 'dark') => {
-    colorMode.value = mode
-    applyTheme()
-  }
-
   const applyTheme = () => {
     if (import.meta.client) {
-      const html = document.documentElement
-      if (colorMode.value === 'dark') {
-        html.classList.add('dark')
-      } else {
-        html.classList.remove('dark')
-      }
-      localStorage.setItem('pif-theme', colorMode.value)
+      document.documentElement.classList.add('dark')
     }
   }
 
-  const initTheme = () => {
-    if (import.meta.client) {
-      const saved = localStorage.getItem('pif-theme') as 'light' | 'dark' | null
-      // Default to dark; only honour an explicit user choice from a previous visit.
-      // Do not follow OS/browser preference.
-      colorMode.value = saved ?? 'dark'
-      applyTheme()
-    }
-  }
+  const initTheme = () => applyTheme()
 
   return {
     colorMode,
     isDark,
-    toggleTheme,
-    setTheme,
     initTheme,
   }
 }

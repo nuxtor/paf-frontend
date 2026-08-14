@@ -26,10 +26,9 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'en-GB' },
       script: [
         {
-          // Apply the theme before first paint to avoid a flash of light.
-          // Default to dark; only an explicit saved choice can switch to light.
-          innerHTML:
-            "(function(){try{var t=localStorage.getItem('pif-theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()",
+          // The storefront is dark only. Set before first paint so there is no
+          // flash of the light palette the `dark:` variants are layered over.
+          innerHTML: "document.documentElement.classList.add('dark')",
           tagPosition: 'head',
         },
       ],
