@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { z } from 'zod'
 import type { Stripe, StripeElements, StripePaymentElement } from '@stripe/stripe-js'
+import { CONTACT_PHONES } from '~/utils/constants'
 
 definePageMeta({
   layout: 'checkout',
@@ -17,10 +18,11 @@ useSeoMeta({
   title: 'Checkout | Premium Abrahamic Foods',
 })
 
-// Redirect if cart is empty
-if (cartStore.isEmpty) {
-  navigateTo('/cart')
-}
+// The empty-cart guard lives in onMounted, below, and deliberately not here.
+// During `nuxt generate` every store is empty, so a guard in setup emitted the
+// whole route as a redirect stub to /cart — a refresh or a direct link dropped
+// the customer out of checkout. Hydration is no better: the cart is restored by
+// fetchCart(), so a check that runs before it would bounce a full basket too.
 
 // Form state
 const form = reactive({
@@ -96,6 +98,15 @@ const stripeElements = ref<StripeElements | null>(null)
 const paymentElement = ref<StripePaymentElement | null>(null)
 const paymentElementReady = ref(false)
 const stripeError = ref('')
+
+// Who to put in front of a customer whose order cannot be paid for. Same
+// number and address the footer and contact page use.
+const appConfig = useAppConfig()
+const supportContact = computed(() => {
+  const email = appConfig?.contact?.email
+  const phone = `call us on ${CONTACT_PHONES[0].number}`
+  return email ? `${phone} or email ${email}` : phone
+})
 
 const initStripeElements = (clientSecret: string) => {
   if (!$stripe) return
@@ -275,8 +286,21 @@ const handleSubmit = async () => {
         'error',
         unmapped[0] || 'Please fix the highlighted fields and try again.'
       )
+    } else if (error?.data?.error === 'Payment initialization failed') {
+      // The order is already on file by the time this comes back — it just has
+      // no payment behind it, so trying again only adds another one nobody can
+      // pay for. Say what happened, say no money moved, and give them a person.
+      stripeError.value =
+        'We could not start the payment for this order. Nothing has been charged. ' +
+        `Please ${supportContact.value} and we will finish it for you.`
+      uiStore.addToast('error', stripeError.value, 0)
     } else {
-      uiStore.addToast('error', error?.data?.message || 'Something went wrong. Please try again.')
+      // The API says `error` for its own failures and `message` for framework
+      // ones; the generic line is a last resort, not the usual case.
+      uiStore.addToast(
+        'error',
+        error?.data?.message || error?.data?.error || 'Something went wrong. Please try again.'
+      )
     }
   } finally {
     isSubmitting.value = false
