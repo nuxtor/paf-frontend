@@ -18,6 +18,9 @@ export default {
             dark: '#3da052',
             DEFAULT: '#2D6A4F',
             light: '#40916C',
+            // Bottom stop of the category bar's gradient — a shade of the
+            // brand green rather than a fourth green in its own right.
+            deep: '#2b8f4a',
           },
           gold: {
             DEFAULT: '#D4A437',

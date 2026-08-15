@@ -8,17 +8,18 @@ const { cmsImageUrl } = useCms()
 const fallbackSlides: CmsHeroSlide[] = [
   {
     id: -1,
-    heading: 'Premium Halal Meat',
-    subheading: 'Quality you can trust, delivered to your door',
+    heading: 'Premium halal, delivered to your door',
+    subheading:
+      'Halal certified meat, poultry and groceries — carefully sourced, hand-cut to order and delivered across the UK.',
     image: getAssetUrl('images/meat-slides-01.jpg'),
-    cta_label: 'Shop Now',
+    cta_label: 'Shop the range',
     cta_url: '/products',
     sort_order: 0,
   },
   {
     id: -2,
-    heading: 'Fresh & Certified',
-    subheading: '100% Halal certified products',
+    heading: 'Halal certified, without compromise',
+    subheading: 'Every product we sell is certified halal and handled with care.',
     image: getAssetUrl('images/meat-slides-02.jpg'),
     cta_label: 'Learn More',
     cta_url: '/pages/halal-promise',
@@ -26,8 +27,8 @@ const fallbackSlides: CmsHeroSlide[] = [
   },
   {
     id: -3,
-    heading: 'Wholesale Available',
-    subheading: 'Special pricing for businesses',
+    heading: 'Wholesale pricing, built for your business',
+    subheading: 'Trade accounts with tiered pricing for restaurants, shops and caterers.',
     image: getAssetUrl('images/meat-slides-03.jpg'),
     cta_label: 'Apply Now',
     cta_url: '/wholesale',
@@ -35,8 +36,8 @@ const fallbackSlides: CmsHeroSlide[] = [
   },
   {
     id: -4,
-    heading: 'Free Delivery',
-    subheading: 'On orders over £100',
+    heading: 'Free delivery, on orders over £100',
+    subheading: 'Nationwide, in 24–48 hours, for £5.99 below the threshold.',
     image: getAssetUrl('images/meat-slides-04.jpg'),
     cta_label: 'Start Shopping',
     cta_url: '/products',
@@ -59,17 +60,36 @@ const resolveMobileImage = (slide: CmsHeroSlide) => {
   return cmsImageUrl(slide.mobile_image)
 }
 
+// The headline sets on two lines, the second one in gold. A newline in the
+// heading is the admin's way of choosing the break; a comma is the fallback so
+// headings written before this existed still land the way they read aloud.
+const splitHeading = (text?: string) => {
+  const source = text ?? ''
+  const newline = source.indexOf('\n')
+  if (newline !== -1) {
+    return { lead: source.slice(0, newline).trim(), accent: source.slice(newline + 1).trim() }
+  }
+  const comma = source.indexOf(',')
+  if (comma !== -1) {
+    return { lead: source.slice(0, comma + 1).trim(), accent: source.slice(comma + 1).trim() }
+  }
+  return { lead: source, accent: '' }
+}
+
+const assurances = [
+  { icon: 'heroicons:check-circle', label: '100% halal certified' },
+  { icon: 'heroicons:truck', label: 'Free delivery over £100' },
+  { icon: 'heroicons:shield-check', label: 'Delivered in 24–48 hours' },
+]
+
 const currentSlide = ref(0)
 let slideInterval: ReturnType<typeof setInterval> | null = null
+
+const current = computed(() => slides.value[currentSlide.value] ?? slides.value[0]!)
 
 const nextSlide = () => {
   if (!slides.value.length) return
   currentSlide.value = (currentSlide.value + 1) % slides.value.length
-}
-
-const prevSlide = () => {
-  if (!slides.value.length) return
-  currentSlide.value = (currentSlide.value - 1 + slides.value.length) % slides.value.length
 }
 
 const goToSlide = (index: number) => {
@@ -101,9 +121,9 @@ onUnmounted(() => {
 <template>
   <section
     v-if="slides.length"
-    class="relative h-[400px] md:h-[500px] lg:h-[600px] bg-pif-green-dark overflow-hidden"
+    class="relative overflow-hidden bg-pif-black min-h-[520px] lg:min-h-[600px] flex items-center"
   >
-    <div class="relative h-full">
+    <div class="absolute inset-0">
       <TransitionGroup
         enter-active-class="transition-opacity duration-1000 ease-in-out"
         enter-from-class="opacity-0"
@@ -118,77 +138,113 @@ onUnmounted(() => {
           :key="slide.id"
           class="absolute inset-0"
         >
-          <div class="absolute inset-0">
-            <picture>
-              <source
-                v-if="resolveMobileImage(slide)"
-                :srcset="resolveMobileImage(slide)"
-                media="(max-width: 767px)"
-              />
-              <img
-                :src="resolveImage(slide)"
-                :alt="slide.heading"
-                class="w-full h-full object-cover"
-              />
-            </picture>
-            <div
-              class="absolute inset-0"
-              :style="{ backgroundColor: slide.overlay_color || 'rgba(0,0,0,0.4)' }"
+          <picture>
+            <source
+              v-if="resolveMobileImage(slide)"
+              :srcset="resolveMobileImage(slide)"
+              media="(max-width: 767px)"
             />
-          </div>
-
-          <div class="relative h-full flex items-start justify-center pt-12 md:pt-16 lg:pt-20">
-            <div class="container">
-              <div
-                class="max-w-2xl mx-auto text-center"
-                :style="{ color: slide.text_color || '#ffffff' }"
-              >
-                <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl mb-4">
-                  {{ slide.heading }}
-                </h1>
-                <p v-if="slide.subheading" class="text-lg md:text-xl mb-6 opacity-90">
-                  {{ slide.subheading }}
-                </p>
-                <NuxtLink
-                  v-if="slide.cta_label && slide.cta_url"
-                  :to="slide.cta_url"
-                  class="inline-flex items-center gap-2 px-6 py-3 bg-pif-gold text-pif-black font-medium rounded-lg hover:bg-pif-gold-light transition-colors"
-                >
-                  {{ slide.cta_label }}
-                  <Icon name="heroicons:arrow-right" class="w-5 h-5" />
-                </NuxtLink>
-              </div>
-            </div>
-          </div>
+            <img
+              :src="resolveImage(slide)"
+              :alt="slide.heading"
+              class="w-full h-full object-cover object-[50%_40%]"
+            />
+          </picture>
+          <!-- Only when the admin has picked one. The two scrims below are what
+               makes the copy readable, so the old rgba(0,0,0,0.4) default would
+               now just flatten the picture a second time. -->
+          <div
+            v-if="slide.overlay_color"
+            class="absolute inset-0"
+            :style="{ backgroundColor: slide.overlay_color }"
+          />
         </div>
       </TransitionGroup>
     </div>
 
-    <button
-      v-if="slides.length > 1"
-      class="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors hidden md:block"
-      @click="prevSlide"
-    >
-      <Icon name="heroicons:chevron-left" class="w-6 h-6" />
-    </button>
-    <button
-      v-if="slides.length > 1"
-      class="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors hidden md:block"
-      @click="nextSlide"
-    >
-      <Icon name="heroicons:chevron-right" class="w-6 h-6" />
-    </button>
+    <div
+      class="absolute inset-0 pointer-events-none"
+      style="background: linear-gradient(90deg, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.72) 42%, rgba(0, 0, 0, 0.25) 78%, rgba(0, 0, 0, 0.45) 100%)"
+    />
+    <div
+      class="absolute inset-0 pointer-events-none"
+      style="background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.75) 100%)"
+    />
 
-    <div v-if="slides.length > 1" class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-      <button
-        v-for="(slide, index) in slides"
-        :key="slide.id"
-        :class="[
-          'w-3 h-3 rounded-full transition-colors',
-          currentSlide === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75',
-        ]"
-        @click="goToSlide(index)"
-      />
+    <div class="container relative w-full">
+      <div class="max-w-2xl py-16 md:py-20 lg:py-24" :style="{ color: current.text_color || '#ffffff' }">
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span
+            class="inline-flex items-center px-3.5 py-1.5 rounded-full border border-pif-gold/60 bg-black/40 text-pif-gold text-xs uppercase tracking-[0.18em]"
+          >
+            100% Halal Certified
+          </span>
+          <span class="text-sm text-white/70">Delivering nationwide</span>
+        </div>
+
+        <Transition
+          mode="out-in"
+          enter-active-class="transition-opacity duration-500 ease-out"
+          enter-from-class="opacity-0"
+          leave-active-class="transition-opacity duration-300 ease-in"
+          leave-to-class="opacity-0"
+        >
+          <div :key="current.id">
+            <h1 class="font-heading text-5xl md:text-6xl lg:text-7xl leading-[0.98] text-balance mb-5">
+              {{ splitHeading(current.heading).lead }}
+              <template v-if="splitHeading(current.heading).accent">
+                <br />
+                <span
+                  class="bg-gradient-to-b from-pif-gold-light to-pif-gold bg-clip-text text-transparent"
+                >
+                  {{ splitHeading(current.heading).accent }}
+                </span>
+              </template>
+            </h1>
+
+            <p v-if="current.subheading" class="text-lg md:text-xl leading-relaxed text-white/80 max-w-xl mb-8">
+              {{ current.subheading }}
+            </p>
+
+            <div class="flex flex-wrap items-center gap-3.5">
+              <NuxtLink
+                v-if="current.cta_label && current.cta_url"
+                :to="current.cta_url"
+                class="inline-flex items-center gap-3 px-7 py-4 rounded-lg bg-gradient-to-b from-pif-gold-light to-pif-gold text-pif-black font-semibold shadow-lg shadow-black/40 hover:brightness-110 transition-[filter]"
+              >
+                {{ current.cta_label }}
+                <Icon name="heroicons:arrow-right" class="w-5 h-5" />
+              </NuxtLink>
+              <NuxtLink
+                to="/wholesale"
+                class="inline-flex items-center gap-2 px-6 py-4 rounded-lg border border-white/45 text-white hover:border-pif-green-dark hover:bg-pif-green-dark/20 transition-colors"
+              >
+                Wholesale enquiries
+              </NuxtLink>
+            </div>
+          </div>
+        </Transition>
+
+        <ul class="flex flex-wrap gap-x-10 gap-y-3.5 pt-7 mt-11 border-t border-white/15">
+          <li v-for="item in assurances" :key="item.label" class="flex items-center gap-2.5">
+            <Icon :name="item.icon" class="w-5 h-5 text-pif-green-dark shrink-0" />
+            <span class="text-sm text-white/85">{{ item.label }}</span>
+          </li>
+        </ul>
+
+        <div v-if="slides.length > 1" class="flex gap-2 mt-10">
+          <button
+            v-for="(slide, index) in slides"
+            :key="slide.id"
+            :class="[
+              'h-1 w-8 rounded-full transition-colors',
+              currentSlide === index ? 'bg-pif-gold' : 'bg-white/30 hover:bg-white/60',
+            ]"
+            :aria-label="`Go to slide ${index + 1}`"
+            @click="goToSlide(index)"
+          />
+        </div>
+      </div>
     </div>
   </section>
 </template>

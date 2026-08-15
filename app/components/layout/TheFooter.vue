@@ -9,9 +9,14 @@ const currentYear = new Date().getFullYear()
 
 const contactEmail = computed(() => appConfig?.contact?.email ?? '')
 const contactAddress = computed(() => appConfig?.contact?.address ?? null)
-const socialFacebook = computed(() => appConfig?.social?.facebook ?? '')
-const socialInstagram = computed(() => appConfig?.social?.instagram ?? '')
-const socialTwitter = computed(() => appConfig?.social?.twitter ?? '')
+
+const socials = computed(() =>
+  [
+    { icon: 'mdi:facebook', label: 'Facebook', url: appConfig?.social?.facebook ?? '' },
+    { icon: 'mdi:instagram', label: 'Instagram', url: appConfig?.social?.instagram ?? '' },
+    { icon: 'mdi:twitter', label: 'Twitter', url: appConfig?.social?.twitter ?? '' },
+  ].filter((s) => s.url)
+)
 
 const toFallbackItems = (links: ReadonlyArray<{ name: string; path: string }>): CmsMenuItem[] =>
   links.map((l, i) => ({
@@ -48,185 +53,122 @@ const isExternal = (url?: string) => !!url && /^https?:\/\//i.test(url)
 </script>
 
 <template>
-  <footer class="bg-pif-cream dark:bg-dark-100 border-t border-gray-200 dark:border-dark-600">
-    <div class="container py-8 md:py-12 lg:py-16">
-      <!-- Brand Section - Mobile First -->
-      <div class="text-center mb-8 md:hidden">
-        <NuxtLink to="/" class="inline-block mb-3">
-          <img
-            :src="logoSrc"
-            :alt="logoAlt"
-            class="h-10 mx-auto dark:brightness-110"
-          />
-        </NuxtLink>
-        <div class="flex justify-center gap-3 mt-4">
-          <a
-            v-if="socialFacebook"
-            :href="socialFacebook"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
-          >
-            <Icon name="mdi:facebook" class="w-5 h-5" />
-          </a>
-          <a
-            v-if="socialInstagram"
-            :href="socialInstagram"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
-          >
-            <Icon name="mdi:instagram" class="w-5 h-5" />
-          </a>
-          <a
-            v-if="socialTwitter"
-            :href="socialTwitter"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
-          >
-            <Icon name="mdi:twitter" class="w-5 h-5" />
-          </a>
-        </div>
-      </div>
-
-      <!-- Links Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        <div
-          v-for="column in footerColumns"
-          :key="column.heading"
-          class="text-center md:text-left"
-        >
-          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mb-3 md:mb-4">
-            {{ column.heading }}
-          </h4>
-          <ul class="space-y-2">
-            <li v-for="link in column.items" :key="link.id">
-              <a
-                v-if="isExternal(link.url)"
-                :href="link.url"
-                :target="link.target && link.target !== '_self' ? link.target : '_blank'"
-                rel="noopener noreferrer"
-                class="text-sm md:text-base text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
-              >
-                {{ link.label }}
-              </a>
-              <NuxtLink
-                v-else
-                :to="link.url"
-                class="text-sm md:text-base text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
-              >
-                {{ link.label }}
-              </NuxtLink>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Contact -->
-        <div class="col-span-2 md:col-span-1 text-center md:text-left mt-4 md:mt-0">
-          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mb-3 md:mb-4">Contact Us</h4>
-          <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-            <li v-if="contactEmail" class="flex items-center justify-center md:justify-start gap-2">
-              <Icon name="heroicons:envelope" class="w-4 h-4 md:w-5 md:h-5 text-pif-green dark:text-pif-gold flex-shrink-0" />
-              <a
-                :href="`mailto:${contactEmail}`"
-                class="text-sm md:text-base hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors break-all"
-              >
-                {{ contactEmail }}
-              </a>
-            </li>
-            <li
-              v-for="phone in CONTACT_PHONES"
-              :key="phone.number"
-              class="flex items-center justify-center md:justify-start gap-2"
-            >
-              <Icon name="heroicons:phone" class="w-4 h-4 md:w-5 md:h-5 text-pif-green dark:text-pif-gold flex-shrink-0" />
-              <a
-                :href="telHref(phone.number)"
-                class="text-sm md:text-base hover:text-pif-green-dark dark:hover:text-pif-gold transition-colors"
-              >
-                {{ phone.number }}
-              </a>
-              <span class="text-xs md:text-sm text-gray-500 dark:text-gray-500">- {{ phone.hours }}</span>
-              <a
-                v-if="phone.whatsapp"
-                :href="whatsappHref(phone.number)"
-                target="_blank"
-                rel="noopener noreferrer"
-                :aria-label="`Message ${phone.number} on WhatsApp`"
-                class="text-[#25D366] hover:opacity-80 transition-opacity flex-shrink-0"
-              >
-                <Icon name="mdi:whatsapp" class="w-4 h-4 md:w-5 md:h-5" />
-              </a>
-            </li>
-
-            <li v-if="contactAddress" class="flex items-start justify-center md:justify-start gap-2">
-              <Icon name="heroicons:map-pin" class="w-4 h-4 md:w-5 md:h-5 mt-0.5 text-pif-green dark:text-pif-gold flex-shrink-0" />
-              <address class="text-sm md:text-base not-italic">
-                {{ contactAddress.line1 }}<br />
-                {{ contactAddress.city }}, {{ contactAddress.county }}<br />
-                {{ contactAddress.postcode }}
-              </address>
-            </li>
-          </ul>
-
-          <!-- Shop Opening Hours -->
-          <h4 class="font-heading text-base md:text-lg text-pif-black dark:text-white mt-6 mb-3">
-            Shop Open time
-          </h4>
-          <ul class="space-y-1 text-gray-600 dark:text-gray-400">
-            <li v-for="slot in SHOP_HOURS" :key="slot.days" class="text-sm md:text-base">
-              {{ slot.days }}: {{ slot.time }}
-            </li>
-          </ul>
-        </div>
-
-        <!-- Brand - Desktop Only -->
-        <div class="hidden md:block lg:text-right">
-          <NuxtLink to="/" class="inline-block mb-4">
-            <img
-              :src="logoSrc"
-              :alt="logoAlt"
-              class="h-12 dark:brightness-110"
-            />
+  <footer class="bg-dark-100 border-t-[3px] border-pif-green-dark">
+    <div class="container py-14 md:py-16">
+      <!-- The brand and contact columns are wider than the link columns, and
+           how many link columns there are is up to whoever edits the footer
+           menu — so the track count comes from the data rather than a fixed
+           four. -->
+      <div
+        class="grid gap-10 md:grid-cols-2 md:gap-12 lg:[grid-template-columns:1.3fr_repeat(var(--footer-link-cols),minmax(0,1fr))_1.5fr]"
+        :style="{ '--footer-link-cols': footerColumns.length }"
+      >
+        <div class="flex flex-col gap-6">
+          <NuxtLink to="/" class="block w-full max-w-[300px]">
+            <img :src="logoSrc" :alt="logoAlt" class="w-full" />
           </NuxtLink>
-          <div class="flex gap-3 mt-4 lg:justify-end">
+
+          <div v-if="socials.length" class="flex gap-2.5">
             <a
-              v-if="socialFacebook"
-              :href="socialFacebook"
+              v-for="social in socials"
+              :key="social.label"
+              :href="social.url"
               target="_blank"
               rel="noopener noreferrer"
-              class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
+              :aria-label="social.label"
+              class="w-10 h-10 rounded-lg border border-dark-700 bg-dark-300 flex items-center justify-center text-gray-300 hover:border-pif-green-dark hover:bg-pif-green-dark/15 hover:text-white transition-colors"
             >
-              <Icon name="mdi:facebook" class="w-5 h-5" />
+              <Icon :name="social.icon" class="w-[18px] h-[18px]" />
             </a>
+          </div>
+
+          <div class="flex flex-col gap-3 p-5 rounded-xl bg-dark-300 border border-dark-600 max-w-[300px]">
+            <h3 class="font-heading text-base tracking-[0.14em] text-pif-gold">Shop Open Time</h3>
+            <div
+              v-for="slot in SHOP_HOURS"
+              :key="slot.days"
+              class="flex justify-between gap-4 text-[15px] text-gray-400"
+            >
+              <span>{{ slot.days }}</span>
+              <span class="text-white">{{ slot.time }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-for="column in footerColumns" :key="column.heading" class="flex flex-col gap-4">
+          <h3 class="font-heading text-base tracking-[0.14em] text-pif-gold">{{ column.heading }}</h3>
+          <template v-for="link in column.items" :key="link.id">
             <a
-              v-if="socialInstagram"
-              :href="socialInstagram"
+              v-if="isExternal(link.url)"
+              :href="link.url"
+              :target="link.target && link.target !== '_self' ? link.target : '_blank'"
+              rel="noopener noreferrer"
+              class="text-[15px] text-gray-400 hover:text-white transition-colors"
+            >
+              {{ link.label }}
+            </a>
+            <NuxtLink
+              v-else
+              :to="link.url"
+              class="text-[15px] text-gray-400 hover:text-white transition-colors"
+            >
+              {{ link.label }}
+            </NuxtLink>
+          </template>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <h3 class="font-heading text-base tracking-[0.14em] text-pif-gold">Contact Us</h3>
+
+          <a
+            v-if="contactEmail"
+            :href="`mailto:${contactEmail}`"
+            class="flex items-center gap-3 text-[15px] text-gray-400 hover:text-white transition-colors break-all"
+          >
+            <Icon name="heroicons:envelope" class="w-[17px] h-[17px] text-pif-gold shrink-0" />
+            {{ contactEmail }}
+          </a>
+
+          <div
+            v-for="phone in CONTACT_PHONES"
+            :key="phone.number"
+            class="flex items-center gap-3 flex-wrap"
+          >
+            <Icon name="heroicons:phone" class="w-[17px] h-[17px] text-pif-gold shrink-0" />
+            <a
+              :href="telHref(phone.number)"
+              class="text-[15px] text-gray-400 hover:text-white transition-colors"
+            >
+              {{ phone.number }}
+            </a>
+            <span class="text-[13px] text-gray-500">- {{ phone.hours }}</span>
+            <a
+              v-if="phone.whatsapp"
+              :href="whatsappHref(phone.number)"
               target="_blank"
               rel="noopener noreferrer"
-              class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
+              :aria-label="`Message ${phone.number} on WhatsApp`"
+              class="w-[22px] h-[22px] rounded-full bg-[#25D366] text-[#0b2c16] flex items-center justify-center hover:opacity-80 transition-opacity shrink-0"
             >
-              <Icon name="mdi:instagram" class="w-5 h-5" />
+              <Icon name="mdi:whatsapp" class="w-3.5 h-3.5" />
             </a>
-            <a
-              v-if="socialTwitter"
-              :href="socialTwitter"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="p-2 bg-white dark:bg-dark-300 rounded-lg text-gray-600 dark:text-gray-400 hover:text-pif-green-dark dark:hover:text-pif-gold hover:shadow-md transition-all"
-            >
-              <Icon name="mdi:twitter" class="w-5 h-5" />
-            </a>
+          </div>
+
+          <div v-if="contactAddress" class="flex items-start gap-3">
+            <Icon name="heroicons:map-pin" class="w-[17px] h-[17px] mt-1 text-pif-gold shrink-0" />
+            <address class="text-[15px] leading-relaxed not-italic text-gray-400">
+              {{ contactAddress.line1 }}<br />
+              {{ contactAddress.city }}, {{ contactAddress.county }}<br />
+              {{ contactAddress.postcode }}
+            </address>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Copyright -->
-    <div class="border-t border-gray-200 dark:border-dark-600">
-      <div class="container py-4">
-        <p class="text-center text-xs md:text-sm text-gray-500 dark:text-gray-400">
+    <div class="border-t border-dark-500">
+      <div class="container py-5">
+        <p class="text-center text-[13.5px] text-gray-500">
           &copy; {{ currentYear }} 1StopWEB.co.uk. All rights reserved.
         </p>
       </div>
