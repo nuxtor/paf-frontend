@@ -17,33 +17,79 @@ const order = ref<Order | null>(null)
 const isLoading = ref(true)
 const error = ref('')
 
-onMounted(async () => {
-  const orderNumber = route.query.order as string
+const STASHED_ORDER_KEY = 'paf_last_order_number'
 
-  if (!orderNumber) {
-    error.value = 'No order number found.'
+const readStashedOrderNumber = (): string => {
+  try {
+    return sessionStorage.getItem(STASHED_ORDER_KEY) || ''
+  } catch {
+    return ''
+  }
+}
+
+const forgetStashedOrderNumber = () => {
+  try {
+    sessionStorage.removeItem(STASHED_ORDER_KEY)
+  } catch {
+    // Nothing to clean up if storage was never available.
+  }
+}
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+onMounted(async () => {
+  // Three ways to name the order, in order of how much we trust them. Stripe
+  // adds `payment_intent` to the return URL itself, so it survives even when
+  // our own `order` parameter does not; the stashed copy covers a query string
+  // that never arrived at all.
+  const orderNumber = (route.query.order as string) || readStashedOrderNumber()
+  const paymentIntent = route.query.payment_intent as string
+
+  if (!orderNumber && !paymentIntent) {
+    error.value =
+      'We could not tell which order this page is for. If you have been charged, ' +
+      'your confirmation email has the order number — please get in touch and we will pick it up from there.'
     isLoading.value = false
     return
   }
 
-  try {
-    const response = await apiFetch<{ success: boolean; order: Order }>('/checkout/confirm', {
-      method: 'POST',
-      body: { order_number: orderNumber },
-    })
+  // Stripe sends the customer back the moment the card clears, which can beat
+  // the webhook that marks the order paid. The API asks Stripe directly, but a
+  // payment still settling (3-D Secure, slower methods) is worth a few retries
+  // before giving up on it.
+  const attempts = 4
 
-    if (response.success) {
-      order.value = response.order
-      // Clear the cart after successful confirmation
-      cartStore.clearCart()
-    } else {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await apiFetch<{ success: boolean; order: Order }>('/checkout/confirm', {
+        method: 'POST',
+        body: {
+          order_number: orderNumber || undefined,
+          payment_intent: paymentIntent || undefined,
+        },
+      })
+
+      if (response.success) {
+        order.value = response.order
+        error.value = ''
+        forgetStashedOrderNumber()
+        // Clear the cart after successful confirmation
+        cartStore.clearCart()
+        break
+      }
+
       error.value = 'Could not confirm your order. Please contact support.'
+    } catch (err: any) {
+      error.value = err?.data?.message || 'Something went wrong confirming your order.'
+
+      // A payment that has not landed yet is the only thing worth waiting for.
+      const stillSettling = err?.data?.message === 'Payment not confirmed'
+      if (!stillSettling) break
+      if (attempt < attempts) await wait(2000)
     }
-  } catch (err: any) {
-    error.value = err?.data?.message || 'Something went wrong confirming your order.'
-  } finally {
-    isLoading.value = false
   }
+
+  isLoading.value = false
 })
 </script>
 

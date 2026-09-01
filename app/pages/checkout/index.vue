@@ -76,6 +76,13 @@ const checkoutSchema = z.object({
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
 
+// The card form cannot exist until there is an order to pay for, so the first
+// press opens the order and brings the form up, and the second one pays. The
+// button says which of the two it is about to do.
+const submitLabel = computed(() =>
+  paymentElementReady.value ? `Pay ${formatCurrency(cartStore.total)}` : 'Continue to Payment'
+)
+
 // Shipping rates
 const postcodeFetched = ref('')
 
@@ -129,6 +136,55 @@ const initStripeElements = (clientSecret: string) => {
     paymentElementReady.value = true
   })
   paymentElement.value = pe
+}
+
+// The order this page has already put on file, and the payment intent behind
+// it. Kept so that pressing Pay a second time finishes the order that is
+// already there instead of opening another one.
+const pendingOrder = ref<{ orderNumber: string; clientSecret: string; signature: string } | null>(null)
+const mountedClientSecret = ref('')
+
+const waitForPaymentElement = (): Promise<boolean> =>
+  new Promise((resolve) => {
+    if (paymentElementReady.value) return resolve(true)
+
+    const check = setInterval(() => {
+      if (paymentElementReady.value) {
+        clearInterval(check)
+        clearTimeout(giveUp)
+        resolve(true)
+      }
+    }, 100)
+
+    const giveUp = setTimeout(() => {
+      clearInterval(check)
+      resolve(paymentElementReady.value)
+    }, 15000)
+  })
+
+/**
+ * Show the card form for a payment intent, rebuilding it if the intent
+ * changed. A Stripe Elements instance is tied to one payment intent for its
+ * whole life — reusing it against a newer intent silently charges the older
+ * one, so the customer pays for an order they are never shown.
+ *
+ * Returns true when the form has only just appeared, so the caller can let the
+ * customer fill it in rather than trying to take a payment from an empty form.
+ */
+const showPaymentForm = async (clientSecret: string): Promise<{ ready: boolean; justMounted: boolean }> => {
+  if (stripeElements.value && mountedClientSecret.value === clientSecret) {
+    return { ready: await waitForPaymentElement(), justMounted: false }
+  }
+
+  paymentElement.value?.destroy()
+  paymentElement.value = null
+  stripeElements.value = null
+  paymentElementReady.value = false
+
+  initStripeElements(clientSecret)
+  mountedClientSecret.value = clientSecret
+
+  return { ready: await waitForPaymentElement(), justMounted: true }
 }
 
 // Validate form
@@ -205,53 +261,81 @@ const handleSubmit = async () => {
   stripeError.value = ''
 
   try {
-    // 1. Create order via API
+    // 1. Put the order on file — or reuse the one this page already opened.
     const billingAddress = form.billing_same_as_shipping ? form.shipping : form.billing
 
-    const response = await apiFetch<{ order: any; client_secret: string }>('/checkout', {
-      method: 'POST',
-      body: {
-        // Guest checkout is keyed by the same session id the cart uses.
-        session_id: getCartSessionId(),
-        email: form.email,
-        phone: form.phone || undefined,
-        items: cartStore.items.map((item) => ({
-          product_id: item.product_id,
-          variant_id: item.variant_id ?? undefined,
-          quantity: item.quantity,
-          note: item.note || undefined,
-        })),
-        shipping_address: form.shipping,
-        billing_address: billingAddress,
-        shipping_method_id: cartStore.selectedShippingRate!.id,
-        notes: form.notes || undefined,
-      },
-    })
+    const payload = {
+      // Guest checkout is keyed by the same session id the cart uses.
+      session_id: getCartSessionId(),
+      email: form.email,
+      phone: form.phone || undefined,
+      items: cartStore.items.map((item) => ({
+        product_id: item.product_id,
+        variant_id: item.variant_id ?? undefined,
+        quantity: item.quantity,
+        note: item.note || undefined,
+      })),
+      shipping_address: form.shipping,
+      billing_address: billingAddress,
+      shipping_method_id: cartStore.selectedShippingRate!.id,
+      notes: form.notes || undefined,
+    }
 
-    // 2. If we don't have Stripe Elements mounted yet, mount them now
-    if (!stripeElements.value) {
-      initStripeElements(response.client_secret)
-      // Wait for payment element to be ready
-      await new Promise<void>((resolve) => {
-        const check = setInterval(() => {
-          if (paymentElementReady.value) {
-            clearInterval(check)
-            resolve()
-          }
-        }, 100)
-        // Timeout after 15s
-        setTimeout(() => {
-          clearInterval(check)
-          resolve()
-        }, 15000)
+    // Nothing about the order has changed since the last press, so there is
+    // nothing new to open. Pressing Pay again used to file a fresh order every
+    // time, leaving a trail of unpayable ones behind the single payment that
+    // eventually went through.
+    const signature = JSON.stringify(payload)
+
+    if (pendingOrder.value?.signature !== signature) {
+      const response = await apiFetch<{ order: any; client_secret: string }>('/checkout', {
+        method: 'POST',
+        body: payload,
       })
+
+      pendingOrder.value = {
+        orderNumber: response.order.order_number,
+        clientSecret: response.client_secret,
+        signature,
+      }
+    }
+
+    const { orderNumber, clientSecret } = pendingOrder.value!
+
+    // 2. Show the card form for *this* order's payment intent.
+    const { ready, justMounted } = await showPaymentForm(clientSecret)
+
+    if (!ready) {
+      stripeError.value =
+        'The card form did not load. Please refresh the page and try again, or ' +
+        `${supportContact.value} and we will finish the order for you.`
+      uiStore.addToast('error', stripeError.value)
+      return
+    }
+
+    if (justMounted) {
+      // The form has only just appeared, so there are no card details in it
+      // yet. Asking Stripe to take the payment now can only fail.
+      stripeError.value = ''
+      uiStore.addToast('info', 'Almost there — enter your card details below, then press Pay again.')
+      document.getElementById('payment-element')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
+
+    // The confirmation page reads the order number off the return URL, but a
+    // customer who lands there without it — a stripped query string, a
+    // bookmark, a shared link — should still see their order.
+    try {
+      sessionStorage.setItem('paf_last_order_number', orderNumber)
+    } catch {
+      // Private browsing can refuse storage; the return URL still carries it.
     }
 
     // 3. Confirm payment with Stripe
     const { error } = await $stripe.confirmPayment({
       elements: stripeElements.value!,
       confirmParams: {
-        return_url: `${window.location.origin}${useRuntimeConfig().app.baseURL}checkout/success?order=${response.order.order_number}`,
+        return_url: `${window.location.origin}${useRuntimeConfig().app.baseURL}checkout/success?order=${orderNumber}`,
         payment_method_data: {
           billing_details: {
             name: `${billingAddress.first_name} ${billingAddress.last_name}`,
@@ -528,6 +612,11 @@ onMounted(async () => {
             </p>
           </div>
 
+          <p v-if="!paymentElementReady" class="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            Your card details will appear here once you press
+            <span class="font-medium">Continue to Payment</span>.
+          </p>
+
           <div id="payment-element" class="min-h-[100px]" />
 
           <p v-if="stripeError" class="text-sm text-red-500 dark:text-red-400 mt-3">
@@ -634,7 +723,7 @@ onMounted(async () => {
             :disabled="isSubmitting || cartStore.isEmpty"
             @click="handleSubmit"
           >
-            Place Order
+            {{ submitLabel }}
           </PButton>
 
           <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
