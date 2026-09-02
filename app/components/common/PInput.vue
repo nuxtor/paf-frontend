@@ -1,4 +1,9 @@
 <script setup lang="ts">
+// Listeners and stray attributes belong on the <input>, not on the wrapper
+// <div>. Focus events in particular do not bubble, so an @blur left to fall
+// through to the wrapper would simply never fire.
+defineOptions({ inheritAttrs: false })
+
 const props = withDefaults(
   defineProps<{
     modelValue?: string | number
@@ -55,6 +60,7 @@ const handleInput = (event: Event) => {
       :disabled="disabled"
       :required="required"
       :class="inputClasses"
+      v-bind="$attrs"
       @input="handleInput"
     />
     <p v-if="error" class="text-sm text-red-500">{{ error }}</p>

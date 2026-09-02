@@ -84,21 +84,43 @@ const submitLabel = computed(() =>
 )
 
 // Shipping rates
-const postcodeFetched = ref('')
+// Keyed by the postcode+country actually quoted, so re-blurring an unchanged
+// field is free but a correction always re-quotes.
+const ratesFetchedFor = ref('')
+let rateFetchTimer: ReturnType<typeof setTimeout> | undefined
 
 const fetchShippingRates = async () => {
   const postcode = form.shipping.postcode.trim()
-  if (!postcode || postcode === postcodeFetched.value) return
+  const country = form.shipping.country
   if (!/^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i.test(postcode)) return
 
-  postcodeFetched.value = postcode
-  await cartStore.getShippingRates(postcode, form.shipping.country)
+  const key = `${postcode.toUpperCase()}|${country}`
+  if (key === ratesFetchedFor.value) return
+  ratesFetchedFor.value = key
+
+  const rates = await cartStore.getShippingRates(postcode, country)
+
+  // A failed or empty quote must not stick: let the next attempt try again.
+  if (!rates.length) ratesFetchedFor.value = ''
 
   // Auto-select first rate if available
   if (cartStore.shippingRates.length > 0 && !cartStore.selectedShippingRate) {
     cartStore.selectShippingRate(cartStore.shippingRates[0])
   }
 }
+
+// Blur alone is not enough — a browser-autofilled postcode may never blur, and
+// a customer can type one and go straight for the pay button. Quote as soon as
+// the field holds a valid postcode, once they have stopped typing.
+watch(
+  () => [form.shipping.postcode, form.shipping.country],
+  () => {
+    clearTimeout(rateFetchTimer)
+    rateFetchTimer = setTimeout(fetchShippingRates, 500)
+  }
+)
+
+onBeforeUnmount(() => clearTimeout(rateFetchTimer))
 
 // Stripe Elements
 const stripeElements = ref<StripeElements | null>(null)
