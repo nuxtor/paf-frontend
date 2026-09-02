@@ -3,7 +3,9 @@ export default defineAppConfig({
   siteTagline: 'The Premium Halal Food',
   contact: {
     email: 'info@premiumabrahamicfoods.co.uk',
-    phone: '+44 123 456 7890',
+    // Phone numbers live in CONTACT_PHONES (app/utils/constants.ts) — there are
+    // several, with different hours, and the header, footer, contact and
+    // wholesale pages all read them from there.
     // Defined once here so the footer and the contact page cannot disagree.
     address: {
       line1: '251 Ilford Lane',

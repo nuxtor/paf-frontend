@@ -6,6 +6,10 @@ useSeoMeta({
   description: 'Login or register for a trade account. Wholesale pricing for restaurants, butchers, and retailers.',
 })
 
+// The same number the header offers, rather than a second copy that can drift.
+const tradePhone = CONTACT_PHONES[0]!
+const tradeTelHref = `tel:${tradePhone.number.replace(/\s+/g, '')}`
+
 const backgroundStyle = computed(() => ({
   backgroundImage: `url('${getAssetUrl('images/meat-slides-03.jpg')}')`
 }))
@@ -163,7 +167,7 @@ const handleRegister = () => {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Need help with your trade account?</p>
             <div class="flex items-center gap-2 text-pif-green-dark dark:text-pif-gold font-medium">
               <Icon name="heroicons:phone" class="w-4 h-4" />
-              <a href="tel:+441234567890">01234 567 890</a>
+              <a :href="tradeTelHref">{{ tradePhone.number }}</a>
             </div>
           </div>
         </div>
