@@ -35,6 +35,14 @@ notify_api() {
 # claiming the edits are live.
 trap 'notify_api failed "The storefront build failed on the server."' ERR
 
+# The build reads node_modules, not package.json, so a commit that adds a
+# dependency builds green here and silently omits whatever that dependency
+# supplied — a missing Tailwind plugin costs no error, just unstyled pages.
+# `npm ci` is skipped in favour of `install`: it is far slower and would throw
+# away a working tree over a lockfile nit mid-deploy.
+echo "==> Syncing dependencies…"
+npm install --no-audit --no-fund
+
 echo "==> Generating static build…"
 npm run generate
 

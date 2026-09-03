@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import typography from '@tailwindcss/typography'
 
 export default {
   darkMode: 'class',
@@ -58,7 +59,31 @@ export default {
           xl: '5rem',
         },
       },
+
+      // CMS page bodies and product descriptions are raw HTML dropped in with
+      // v-html, so Preflight leaves them with no heading sizes, list markers or
+      // paragraph spacing. The typography plugin supplies all of that; these
+      // variables just point its dark palette at the site's own colours rather
+      // than its stock greys.
+      typography: ({ theme }: { theme: (path: string) => string }) => ({
+        invert: {
+          css: {
+            '--tw-prose-invert-body': theme('colors.gray.300'),
+            '--tw-prose-invert-headings': theme('colors.white'),
+            '--tw-prose-invert-lead': theme('colors.gray.400'),
+            '--tw-prose-invert-bold': theme('colors.white'),
+            '--tw-prose-invert-counters': theme('colors.gray.400'),
+            '--tw-prose-invert-bullets': theme('colors.pif.gold.DEFAULT'),
+            '--tw-prose-invert-hr': theme('colors.dark.600'),
+            '--tw-prose-invert-quotes': theme('colors.gray.100'),
+            '--tw-prose-invert-quote-borders': theme('colors.pif.gold.DEFAULT'),
+            '--tw-prose-invert-captions': theme('colors.gray.400'),
+            '--tw-prose-invert-th-borders': theme('colors.dark.600'),
+            '--tw-prose-invert-td-borders': theme('colors.dark.600'),
+          },
+        },
+      }),
     },
   },
-  plugins: [],
+  plugins: [typography],
 } satisfies Config
