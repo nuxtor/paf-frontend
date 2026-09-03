@@ -1,10 +1,10 @@
 <script setup lang="ts">
 const cmsStore = useCmsStore()
 
-await useAsyncData('cms-faqs', async () => {
-  await cmsStore.fetchFaqs()
-  return true
-})
+// Awaited directly, not through useAsyncData — see app.vue and index.vue. The
+// handler only fills a store, so the prerendered payload is a bare `true` and
+// a client-side arrival here would render with no FAQs at all.
+await cmsStore.fetchFaqs()
 
 useSeoMeta({
   title: 'Frequently Asked Questions | Premium Abrahamic Foods',
