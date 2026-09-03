@@ -84,3 +84,23 @@ export const telHref = (phone: string): string => `tel:${phone.replace(/\s+/g, '
 // UK numbers: drop the trunk "0" and prefix the country code for wa.me links.
 export const whatsappHref = (phone: string): string =>
   `https://wa.me/44${phone.replace(/\D/g, '').replace(/^0/, '')}`
+
+// An order line as the customer should read it: the product plus whichever
+// variant they picked, e.g. "Mutton Fore Shanks — 1kg / Whole (Not Cut)".
+export const orderItemLabel = (item: {
+  product_name?: string | null
+  variant_name?: string | null
+  sku?: string | null
+}): string =>
+  [item.product_name, item.variant_name].filter(Boolean).join(' — ') || item.sku || 'Item'
+
+// Money comes back from the API as a decimal string. Parse before any maths.
+export const toAmount = (value: string | number | null | undefined): number => {
+  const amount = typeof value === 'string' ? parseFloat(value) : value
+  return Number.isFinite(amount) ? (amount as number) : 0
+}
+
+// Quantity as it appears on an order line: "2 kg" for weight-sold goods,
+// plain "2" for anything counted by the unit.
+export const formatOrderQty = (item: { quantity: number; unit?: string | null }): string =>
+  item.unit && item.unit !== 'each' ? `${item.quantity} ${item.unit}` : `${item.quantity}`

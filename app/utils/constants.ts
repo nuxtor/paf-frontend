@@ -1,18 +1,21 @@
 export const ORDER_STATUSES: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'warning' },
-  confirmed: { label: 'Confirmed', color: 'info' },
-  processing: { label: 'Processing', color: 'info' },
+  confirmed: { label: 'Confirmed', color: 'secondary' },
+  processing: { label: 'Processing', color: 'secondary' },
+  ready_to_ship: { label: 'Ready to Ship', color: 'secondary' },
   shipped: { label: 'Shipped', color: 'primary' },
+  out_for_delivery: { label: 'Out for Delivery', color: 'primary' },
   delivered: { label: 'Delivered', color: 'success' },
   cancelled: { label: 'Cancelled', color: 'error' },
-  refunded: { label: 'Refunded', color: 'gray' },
+  refunded: { label: 'Refunded', color: 'default' },
+  partially_refunded: { label: 'Partially Refunded', color: 'warning' },
 }
 
 export const PAYMENT_STATUSES: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'warning' },
   paid: { label: 'Paid', color: 'success' },
   failed: { label: 'Failed', color: 'error' },
-  refunded: { label: 'Refunded', color: 'gray' },
+  refunded: { label: 'Refunded', color: 'default' },
   partially_refunded: { label: 'Partially Refunded', color: 'warning' },
 }
 

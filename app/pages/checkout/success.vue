@@ -12,6 +12,12 @@ useSeoMeta({
 const route = useRoute()
 const { apiFetch } = useApi()
 const cartStore = useCartStore()
+const authStore = useAuthStore()
+
+// Order history lives behind the account login and is keyed by order number,
+// not id. A guest checkout has no account to look it up in, so for them this
+// page is the record of the order and there is nowhere further to send them.
+const canViewOrderDetails = computed(() => authStore.isAuthenticated)
 
 const order = ref<Order | null>(null)
 const isLoading = ref(true)
@@ -38,6 +44,10 @@ const forgetStashedOrderNumber = () => {
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 onMounted(async () => {
+  // Stripe returns the customer with a full page load, so nothing has restored
+  // the session yet — without this a signed-in shopper looks like a guest.
+  authStore.initAuth()
+
   // Three ways to name the order, in order of how much we trust them. Stripe
   // adds `payment_intent` to the return URL itself, so it survives even when
   // our own `order` parameter does not; the stashed copy covers a query string
@@ -141,7 +151,7 @@ onMounted(async () => {
         <p class="text-xl font-semibold text-pif-black">#{{ order.order_number }}</p>
         <div class="mt-4 flex items-center justify-center gap-4 text-sm text-gray-500">
           <span>Status: <span class="font-medium text-pif-green-dark capitalize">{{ order.status }}</span></span>
-          <span>Total: <span class="font-medium text-pif-green-dark">{{ formatCurrency(order.total) }}</span></span>
+          <span>Total: <span class="font-medium text-pif-green-dark">{{ formatCurrency(toAmount(order.total)) }}</span></span>
         </div>
       </div>
 
@@ -155,19 +165,20 @@ onMounted(async () => {
             class="flex justify-between text-sm gap-4"
           >
             <span class="text-gray-700">
-              {{ item.name }} x {{ item.quantity }}
+              {{ orderItemLabel(item) }} × {{ formatOrderQty(item) }}
               <span v-if="item.note" class="block text-xs text-gray-500 italic">
                 Note: {{ item.note }}
               </span>
             </span>
-            <span class="font-medium whitespace-nowrap">{{ formatCurrency(item.line_total) }}</span>
+            <span class="font-medium whitespace-nowrap">{{ formatCurrency(toAmount(item.total)) }}</span>
           </div>
         </div>
       </div>
 
       <div class="space-y-4">
         <NuxtLink
-          :to="`/account/orders/${order.id}`"
+          v-if="canViewOrderDetails"
+          :to="`/account/orders/${order.order_number}`"
           class="block w-full py-3 bg-pif-green-dark text-white font-medium rounded-lg hover:bg-pif-green transition-colors"
         >
           View Order Details

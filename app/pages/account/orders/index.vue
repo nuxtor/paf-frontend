@@ -1,33 +1,22 @@
 <script setup lang="ts">
 import { ORDER_STATUSES, PAYMENT_STATUSES } from '~/utils/constants'
+import type { Order } from '~/types/order'
 
 definePageMeta({
   layout: 'account',
 })
 
-interface OrderListItem {
-  order_number: string
-  status: string
-  payment_status: string
-  total: string | number
-  currency: string
-  created_at: string
-  items?: Array<{ name: string; quantity: number; unit?: string | null; note?: string | null }>
-}
-
-const formatOrderQty = (item: { quantity: number; unit?: string | null }) =>
-  item.unit && item.unit !== 'each' ? `${item.quantity} ${item.unit}` : `${item.quantity}`
-
 const { apiFetch } = useApi()
 
-const orders = ref<OrderListItem[]>([])
+const orders = ref<Order[]>([])
 const isLoading = ref(true)
 
 const fetchOrders = async () => {
   isLoading.value = true
   try {
-    const response = await apiFetch<{ data: OrderListItem[] }>('/orders')
-    orders.value = response.data
+    // The API answers with { orders, meta } — there is no `data` envelope.
+    const response = await apiFetch<{ orders: Order[] }>('/orders')
+    orders.value = response.orders ?? []
   } catch (error) {
     console.error('Failed to fetch orders', error)
     orders.value = []
@@ -37,11 +26,6 @@ const fetchOrders = async () => {
 }
 
 onMounted(fetchOrders)
-
-const toNum = (v: string | number) => (typeof v === 'string' ? parseFloat(v) : v)
-
-const formatDate = (date: string) =>
-  new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(new Date(date))
 
 useSeoMeta({
   title: 'Order History | Premium Abrahamic Foods',
@@ -93,29 +77,39 @@ useSeoMeta({
           </div>
           <div>
             <p class="text-xs text-gray-500">Status</p>
-            <PBadge :variant="(ORDER_STATUSES[order.status]?.color as any) || 'gray'">
+            <PBadge :variant="(ORDER_STATUSES[order.status]?.color as any) || 'default'">
               {{ ORDER_STATUSES[order.status]?.label || order.status }}
             </PBadge>
           </div>
           <div>
             <p class="text-xs text-gray-500">Payment</p>
-            <PBadge :variant="(PAYMENT_STATUSES[order.payment_status]?.color as any) || 'gray'">
+            <PBadge :variant="(PAYMENT_STATUSES[order.payment_status]?.color as any) || 'default'">
               {{ PAYMENT_STATUSES[order.payment_status]?.label || order.payment_status }}
             </PBadge>
           </div>
           <div class="md:text-right">
             <p class="text-xs text-gray-500">Total</p>
             <p class="font-semibold text-pif-green-dark">
-              {{ formatCurrency(toNum(order.total)) }}
+              {{ formatCurrency(toAmount(order.total)) }}
             </p>
           </div>
         </div>
 
         <div v-if="order.items?.length" class="border-t pt-4 text-sm text-gray-600 space-y-1">
           <div v-for="(i, idx) in order.items" :key="idx">
-            <p>{{ formatOrderQty(i) }} × {{ i.name }}</p>
+            <p>{{ formatOrderQty(i) }} × {{ orderItemLabel(i) }}</p>
             <p v-if="i.note" class="text-xs text-gray-500 italic">Note: {{ i.note }}</p>
           </div>
+        </div>
+
+        <div class="border-t mt-4 pt-4">
+          <NuxtLink
+            :to="`/account/orders/${order.order_number}`"
+            class="inline-flex items-center gap-2 text-sm font-medium text-pif-green-dark hover:underline"
+          >
+            View order details
+            <Icon name="heroicons:arrow-right" class="w-4 h-4" />
+          </NuxtLink>
         </div>
       </div>
     </div>
