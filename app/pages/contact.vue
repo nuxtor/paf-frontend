@@ -45,13 +45,13 @@ const breadcrumbs = [{ label: 'Contact Us' }]
 <template>
   <div>
     <!-- Hero -->
-    <div class="relative h-64 md:h-80 bg-pif-green-dark">
-      <div class="absolute inset-0 flex items-center justify-center">
-        <h1 class="font-heading text-4xl md:text-5xl text-white">Contact Us</h1>
+    <div class="relative h-48 md:h-64 bg-pif-green-dark">
+      <div class="absolute inset-0 flex items-center justify-center px-4">
+        <h1 class="font-heading text-3xl md:text-5xl text-white text-center">Contact Us</h1>
       </div>
     </div>
 
-    <div class="container py-12">
+    <div class="container py-8 md:py-12">
       <TheBreadcrumb :items="breadcrumbs" />
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -146,10 +146,12 @@ const breadcrumbs = [{ label: 'Contact Us' }]
 
         <!-- Contact Form -->
         <div class="lg:col-span-2">
+          <h2 class="font-heading text-2xl text-pif-black dark:text-white mb-6">Send Us a Message</h2>
+
           <PCard>
             <div v-if="isSubmitted" class="text-center py-8">
-              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Icon name="heroicons:check" class="w-8 h-8 text-green-600" />
+              <div class="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="heroicons:check" class="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h3 class="font-heading text-xl text-pif-black dark:text-white mb-2">Message Sent!</h3>
               <p class="text-gray-600 dark:text-gray-300">Thank you for contacting us. We'll get back to you soon.</p>
