@@ -42,10 +42,10 @@ const { src: logoSrc, alt: logoAlt } = useSiteLogo()
             </div>
           </div>
           <div class="flex items-center gap-4">
-            <NuxtLink to="/policies/privacy" class="hover:text-pif-green-dark dark:hover:text-pif-gold">
+            <NuxtLink to="/pages/privacy" class="hover:text-pif-green-dark dark:hover:text-pif-gold">
               Privacy Policy
             </NuxtLink>
-            <NuxtLink to="/terms" class="hover:text-pif-green-dark dark:hover:text-pif-gold">
+            <NuxtLink to="/pages/terms" class="hover:text-pif-green-dark dark:hover:text-pif-gold">
               Terms & Conditions
             </NuxtLink>
           </div>
