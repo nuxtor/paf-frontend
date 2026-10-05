@@ -109,16 +109,18 @@ export const CONTACT_PHONES = [
   { number: '020 8478 0552', hours: '3pm to 6pm', whatsapp: false },
 ] as const
 
+// Only used if the CMS footer menu cannot be loaded, so these have to be
+// real routes: the CMS pages are served at /pages/<slug>. There is no
+// Alternative Products page to link to.
 export const FOOTER_POLICIES = [
-  { name: 'Alternative Products', path: '/policies/alternative-products' },
-  { name: 'Delivery Policy', path: '/policies/delivery' },
-  { name: 'Refund Policy', path: '/policies/refund' },
-  { name: 'Privacy Policy', path: '/policies/privacy' },
+  { name: 'Delivery Policy', path: '/pages/delivery' },
+  { name: 'Refund Policy', path: '/pages/refund' },
+  { name: 'Privacy Policy', path: '/pages/privacy' },
 ] as const
 
 export const FOOTER_INFO = [
   { name: 'About Us', path: '/about-us' },
   { name: 'Customer Service', path: '/contact' },
-  { name: 'Terms and Conditions', path: '/terms' },
+  { name: 'Terms and Conditions', path: '/pages/terms' },
   { name: 'FAQs', path: '/faqs' },
 ] as const

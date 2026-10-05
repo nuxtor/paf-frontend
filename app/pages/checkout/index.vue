@@ -750,9 +750,9 @@ onMounted(async () => {
 
           <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
             By placing your order, you agree to our
-            <NuxtLink to="/terms" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Terms and Conditions</NuxtLink>
+            <NuxtLink to="/pages/terms" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Terms and Conditions</NuxtLink>
             and
-            <NuxtLink to="/policies/privacy" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Privacy Policy</NuxtLink>.
+            <NuxtLink to="/pages/privacy" class="underline hover:text-pif-green-dark dark:hover:text-pif-gold">Privacy Policy</NuxtLink>.
           </p>
         </div>
       </div>

@@ -431,8 +431,8 @@ const handleRegister = () => {
                       class="w-4 h-4 mt-1 bg-white dark:bg-dark-300 border-gray-300 dark:border-dark-600 text-pif-green dark:text-pif-gold rounded focus:ring-pif-green dark:focus:ring-pif-gold focus:ring-offset-white dark:focus:ring-offset-dark-100"
                     />
                     <span class="text-sm text-gray-600 dark:text-gray-400">
-                      I agree to the <NuxtLink to="/terms" class="text-pif-green-dark dark:text-pif-gold hover:underline">Terms & Conditions</NuxtLink>
-                      and <NuxtLink to="/policies/privacy" class="text-pif-green-dark dark:text-pif-gold hover:underline">Privacy Policy</NuxtLink>
+                      I agree to the <NuxtLink to="/pages/terms" class="text-pif-green-dark dark:text-pif-gold hover:underline">Terms & Conditions</NuxtLink>
+                      and <NuxtLink to="/pages/privacy" class="text-pif-green-dark dark:text-pif-gold hover:underline">Privacy Policy</NuxtLink>
                     </span>
                   </label>
                 </div>

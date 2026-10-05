@@ -97,11 +97,11 @@ useSeoMeta({
           <input type="checkbox" required class="mt-1 rounded text-pif-green-dark dark:text-pif-gold focus:ring-pif-green dark:focus:ring-pif-gold dark:bg-dark-300 dark:border-dark-600" />
           <span class="text-gray-600 dark:text-gray-400">
             I agree to the
-            <NuxtLink to="/terms" class="text-pif-green-dark dark:text-pif-gold hover:underline">
+            <NuxtLink to="/pages/terms" class="text-pif-green-dark dark:text-pif-gold hover:underline">
               Terms and Conditions
             </NuxtLink>
             and
-            <NuxtLink to="/policies/privacy" class="text-pif-green-dark dark:text-pif-gold hover:underline">
+            <NuxtLink to="/pages/privacy" class="text-pif-green-dark dark:text-pif-gold hover:underline">
               Privacy Policy
             </NuxtLink>
           </span>
