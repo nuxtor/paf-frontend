@@ -17,23 +17,45 @@ const mapsHref = computed(() => {
   )}`
 })
 
+const { apiFetch } = useApi()
+
 const form = ref({
   name: '',
   email: '',
   phone: '',
   subject: '',
   message: '',
+  // Honeypot. Hidden from real visitors, so anything in it came from a bot
+  // filling in every input on the page; the API drops those silently.
+  company_website: '',
 })
 
 const isLoading = ref(false)
 const isSubmitted = ref(false)
+const error = ref('')
 
 const handleSubmit = async () => {
   isLoading.value = true
+  error.value = ''
+
   try {
-    // TODO: Implement API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await apiFetch('/contact', {
+      method: 'POST',
+      body: form.value,
+    })
     isSubmitted.value = true
+  } catch (e: any) {
+    const status = e?.response?.status
+    const data = e?.response?._data
+
+    if (status === 422 && data?.errors) {
+      error.value = Object.values(data.errors).flat().join(' ')
+    } else if (status === 429) {
+      error.value = 'You have already sent us a few messages. Please wait a little while before sending another.'
+    } else {
+      error.value =
+        'Sorry, we could not send your message just now. Please try again, or call us on 020 8478 0552.'
+    }
   } finally {
     isLoading.value = false
   }
@@ -158,6 +180,24 @@ const breadcrumbs = [{ label: 'Contact Us' }]
             </div>
 
             <form v-else class="space-y-4" @submit.prevent="handleSubmit">
+              <div
+                v-if="error"
+                class="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm"
+              >
+                {{ error }}
+              </div>
+
+              <!-- Honeypot: display:none, so only a bot ever fills it in. -->
+              <input
+                v-model="form.company_website"
+                type="text"
+                name="company_website"
+                tabindex="-1"
+                autocomplete="off"
+                aria-hidden="true"
+                class="hidden"
+              >
+
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <PInput v-model="form.name" label="Name" placeholder="Your name" required />
                 <PInput v-model="form.email" label="Email" type="email" placeholder="your@email.com" required />
