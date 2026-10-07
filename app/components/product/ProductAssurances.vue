@@ -11,27 +11,26 @@ const labels: Record<(typeof assurances)[number], string> = {
 </script>
 
 <template>
-  <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
-    <div v-for="key in assurances" :key="key" class="flex flex-col items-center text-center">
-      <img
-        :src="`/images/assurances/${key}.png`"
-        :alt="labels[key]"
-        width="64"
-        height="64"
-        loading="lazy"
-        class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain"
-      />
+  <div>
+    <div class="grid grid-cols-4 gap-1.5 sm:gap-3">
+      <div v-for="key in assurances" :key="key" class="flex flex-col items-center text-center">
+        <img
+          :src="`/images/assurances/${key}.png`"
+          :alt="labels[key]"
+          width="64"
+          height="64"
+          loading="lazy"
+          class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 object-contain"
+        />
 
-      <p class="mt-2 text-[10px] sm:text-xs font-medium leading-tight text-pif-black dark:text-gray-200">
-        {{ labels[key] }}
-      </p>
-
-      <p
-        v-if="key === 'grass-fed'"
-        class="mt-0.5 text-[8px] leading-tight text-gray-500 dark:text-gray-400"
-      >
-        Only for red meat and poultry
-      </p>
+        <p class="mt-2 text-[10px] sm:text-xs font-medium leading-tight text-pif-black dark:text-gray-200">
+          {{ labels[key] }}
+        </p>
+      </div>
     </div>
+
+    <p class="mt-1.5 text-center text-[8px] leading-tight text-gray-500 dark:text-gray-400">
+      Only for red meat and poultry
+    </p>
   </div>
 </template>
