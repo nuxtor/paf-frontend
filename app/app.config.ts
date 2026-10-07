@@ -15,9 +15,8 @@ export default defineAppConfig({
     },
   },
   social: {
-    facebook: 'https://facebook.com/premiumabrahimicfoods',
-    instagram: 'https://instagram.com/premiumabrahimicfoods',
-    twitter: 'https://twitter.com/paborahimicfoods',
+    instagram: 'https://www.instagram.com/premium.abrahamic.foods',
+    tiktok: 'https://www.tiktok.com/@premium.abrahamic',
   },
   home: {
     // Drop a 9:16 clip in public/videos/ and name it here, and it appears

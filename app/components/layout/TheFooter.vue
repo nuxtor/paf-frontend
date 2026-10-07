@@ -12,9 +12,8 @@ const contactAddress = computed(() => appConfig?.contact?.address ?? null)
 
 const socials = computed(() =>
   [
-    { icon: 'mdi:facebook', label: 'Facebook', url: appConfig?.social?.facebook ?? '' },
     { icon: 'mdi:instagram', label: 'Instagram', url: appConfig?.social?.instagram ?? '' },
-    { icon: 'mdi:twitter', label: 'Twitter', url: appConfig?.social?.twitter ?? '' },
+    { icon: 'ic:baseline-tiktok', label: 'TikTok', url: appConfig?.social?.tiktok ?? '' },
   ].filter((s) => s.url)
 )
 
