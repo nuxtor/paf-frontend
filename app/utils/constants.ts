@@ -94,7 +94,6 @@ export const NAV_LINKS = [
   { name: 'Home', path: '/' },
   { name: 'About Us', path: '/about-us' },
   { name: 'Wholesale', path: '/wholesale' },
-  { name: 'Delivery', path: '/delivery' },
   { name: 'Contact', path: '/contact' },
 ] as const
 
