@@ -25,6 +25,13 @@ const labels: Record<(typeof assurances)[number], string> = {
       <p class="mt-2 text-[10px] sm:text-xs font-medium leading-tight text-pif-black dark:text-gray-200">
         {{ labels[key] }}
       </p>
+
+      <p
+        v-if="key === 'grass-fed'"
+        class="mt-0.5 text-[6px] leading-tight text-gray-500 dark:text-gray-400"
+      >
+        Only for red meat and poultry
+      </p>
     </div>
   </div>
 </template>
